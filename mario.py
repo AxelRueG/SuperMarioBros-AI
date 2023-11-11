@@ -24,6 +24,7 @@ class Mario(Individual):
                  debug: Optional[bool] = False,
                  ):
         
+
         self.config = config
 
         self.lifespan = lifespan
@@ -31,15 +32,17 @@ class Mario(Individual):
         self.debug = debug
 
         self._fitness = 0  # Overall fitness
-        self._frames_since_progress = 0  # Number of frames since Mario has made progress towards the goal
-        self._frames = 0  # Number of frames Mario has been alive
+        self._frames_since_progress = 0  # Número de frames desde que Mario avanzó hacia la meta
+        self._frames = 0  # Número de frames que Mario ha estado vivo
         
+        #seteo la config de la arquitectura de la capa oculta y la manera en la que se activan las neuronas
         self.hidden_layer_architecture = self.config.NeuralNetwork.hidden_layer_architecture
         self.hidden_activation = self.config.NeuralNetwork.hidden_node_activation
         self.output_activation = self.config.NeuralNetwork.output_node_activation
 
         self.start_row, self.viz_width, self.viz_height = self.config.NeuralNetwork.input_dims
 
+        
         if self.config.NeuralNetwork.encode_row:
             num_inputs = self.viz_width * self.viz_height + self.viz_height
         else:
@@ -47,16 +50,16 @@ class Mario(Individual):
         # print(f'num inputs:{num_inputs}')
         
         self.inputs_as_array = np.zeros((num_inputs, 1))
-        self.network_architecture = [num_inputs]                          # Input Nodes
-        self.network_architecture.extend(self.hidden_layer_architecture)  # Hidden Layer Ndoes
-        self.network_architecture.append(6)                        # 6 Outputs ['u', 'd', 'l', 'r', 'a', 'b']
+        self.network_architecture = [num_inputs]                          # nodos de entrada
+        self.network_architecture.extend(self.hidden_layer_architecture)  # nodos de la capa oculata
+        self.network_architecture.append(6)                        # las 6 salidas : abajo, arriba, izq, derecha, a, b
 
         self.network = FeedForwardNetwork(self.network_architecture,
                                           get_activation_by_name(self.hidden_activation),
                                           get_activation_by_name(self.output_activation)
                                          )
 
-        # If chromosome is set, take it
+        # si estan seteados los cromosomas, los toma
         if chromosome:
             self.network.params = chromosome
         
@@ -64,18 +67,19 @@ class Mario(Individual):
         self.x_dist = None
         self.game_score = None
         self.did_win = False
-        # This is mainly just to "see" Mario winning
+
+        # Esto es principalmente para "ver" a Mario ganar. #TODO: es la animacion se puede sacar
         self.allow_additional_time  = self.config.Misc.allow_additional_time_for_flagpole
         self.additional_timesteps = 0
         self.max_additional_timesteps = int(60*2.5)
         self._printed = False
 
-        # Keys correspond with             B, NULL, SELECT, START, U, D, L, R, A
+        # set de teclas                    B, NULL, SELECT, START, U, D, L, R, A
         # index                            0  1     2       3      4  5  6  7  8
         self.buttons_to_press = np.array( [0, 0,    0,      0,     0, 0, 0, 0, 0], np.int8)
         self.farthest_x = 0
 
-
+    #getter del fitness
     @property
     def fitness(self):
         return self._fitness
@@ -89,7 +93,8 @@ class Mario(Individual):
 
     def encode_chromosome(self):
         pass
-
+    
+    #calculo el fitness del frame
     def calculate_fitness(self):
         frames = self._frames
         distance = self.x_dist
@@ -97,10 +102,11 @@ class Mario(Individual):
 
         self._fitness = self.config.GeneticAlgorithm.fitness_func(frames, distance, score, self.did_win)
 
+    #TODO: esto arma la grilla para detectar que elementos se encuentran en ella, no?
     def set_input_as_array(self, ram, tiles) -> None:
         mario_row, mario_col = SMB.get_mario_row_col(ram)
         arr = []
-        
+        #(start_row, width, height)-> (4, 7, 10)  donde width y height van a conformar la malla de pixeles
         for row in range(self.start_row, self.start_row + self.viz_height):
             for col in range(mario_col, mario_col + self.viz_width):
                 try:
@@ -129,17 +135,18 @@ class Mario(Individual):
 
     def update(self, ram, tiles, buttons, ouput_to_buttons_map) -> bool:
         """
-        The main update call for Mario.
-        Takes in inputs of surrounding area and feeds through the Neural Network
-        
-        Return: True if Mario is alive
-                False otherwise
+        Es el principal update para mario.
+        toma los imputs del area del entorno y se alimenta mediante la red neuronal
+        lo que devuelve es si mario esta vivo (True) o no (False)
         """
+        #si mario esta vivo, aumenta el frame, se setea la distancia que se recorrio en el eje x, y se guarda el score 
+        #TODO quitar lo del score
         if self.is_alive:
             self._frames += 1
             self.x_dist = SMB.get_mario_location_in_level(ram).x
             self.game_score = SMB.get_mario_score(ram)
-            # Sliding down flag pole
+            
+            # si llegamos a la meta, printeamos un mensaje
             if ram[0x001D] == 3:
                 self.did_win = True
                 if not self._printed and self.debug:
@@ -150,16 +157,19 @@ class Mario(Individual):
                 if not self.allow_additional_time:
                     self.is_alive = False
                     return False
-            # If we made it further, reset stats
+            
+            # actualizo la mejor distancia si es que se llego mas lejos y reseteo la actual            
             if self.x_dist > self.farthest_x:
                 self.farthest_x = self.x_dist
                 self._frames_since_progress = 0
             else:
                 self._frames_since_progress += 1
 
+            #por si me paso del tiempo limite 
             if self.allow_additional_time and self.did_win:
                 self.additional_timesteps += 1
             
+            #si me paso del maximo de timesteps, mato a mario #TODO ver que onda el porque 60*3
             if self.allow_additional_time and self.additional_timesteps > self.max_additional_timesteps:
                 self.is_alive = False
                 return False
@@ -169,35 +179,36 @@ class Mario(Individual):
         else:
             return False
 
-        # Did you fly into a hole?
+        # por si caemos al vacio
         if ram[0x0E] in (0x0B, 0x06) or ram[0xB5] == 2:
             self.is_alive = False
             return False
 
         self.set_input_as_array(ram, tiles)
 
-        # Calculate the output
+        # calculo la salida
         output = self.network.feed_forward(self.inputs_as_array)
         threshold = np.where(output > 0.5)[0]
-        self.buttons_to_press.fill(0)  # Clear
+        self.buttons_to_press.fill(0)  # limpio botones
 
-        # Set buttons
+        # seteo los botones
         for b in threshold:
             self.buttons_to_press[ouput_to_buttons_map[b]] = 1
 
         return True
     
+#esta funcion guarda en un bin los pesos y el bias del modelo
 def save_mario(population_folder: str, individual_name: str, mario: Mario) -> None:
     # Make population folder if it doesnt exist
     if not os.path.exists(population_folder):
         os.makedirs(population_folder)
 
-    # Save settings.config
+    # guardo settings.config
     if 'settings.config' not in os.listdir(population_folder):
         with open(os.path.join(population_folder, 'settings.config'), 'w') as config_file:
             config_file.write(mario.config._config_text_file)
     
-    # Make a directory for the individual
+    # crea el directorio para el individual
     individual_dir = os.path.join(population_folder, individual_name)
     os.makedirs(individual_dir)
 
@@ -212,12 +223,13 @@ def save_mario(population_folder: str, individual_name: str, mario: Mario) -> No
         np.save(os.path.join(individual_dir, w_name), weights)
         np.save(os.path.join(individual_dir, b_name), bias)
     
+#carga el archivo del individual
 def load_mario(population_folder: str, individual_name: str, config: Optional[Config] = None) -> Mario:
-    # Make sure individual exists inside population folder
+    # se asegura que exista dentro de la carpeta population
     if not os.path.exists(os.path.join(population_folder, individual_name)):
         raise Exception(f'{individual_name} not found inside {population_folder}')
 
-    # Load a config if one is not given
+    # cargo la config
     if not config:
         settings_path = os.path.join(population_folder, 'settings.config')
         config = None
@@ -227,7 +239,8 @@ def load_mario(population_folder: str, individual_name: str, config: Optional[Co
             raise Exception(f'settings.config not found under {population_folder}')
 
     chromosome: Dict[str, np.ndarray] = {}
-    # Grab all .npy files, i.e. W1.npy, b1.npy, etc. and load them into the chromosome
+
+    # tomo los archivos .npy , como por ej: W1.npy, b1.npy, etc. y los cargo en el cromosoma
     for fname in os.listdir(os.path.join(population_folder, individual_name)):
         extension = fname.rsplit('.npy', 1)
         if len(extension) == 2:
@@ -237,6 +250,7 @@ def load_mario(population_folder: str, individual_name: str, config: Optional[Co
     mario = Mario(config, chromosome=chromosome)
     return mario
 
+#calculo las estadisticas 
 def _calc_stats(data: List[Union[int, float]]) -> Tuple[float, float, float, float, float]:
     mean = np.mean(data)
     median = np.median(data)
@@ -246,19 +260,22 @@ def _calc_stats(data: List[Union[int, float]]) -> Tuple[float, float, float, flo
 
     return (mean, median, std, _min, _max)
 
+#guardo las estadisticas
 def save_stats(population: Population, fname: str):
     directory = os.path.dirname(fname)
+    #por si no existe el directorio lo creo
     if not os.path.exists(directory):
         os.makedirs(directory)
 
     f = fname
-
+    #cargo la informacion de los individuos de la poblacion
     frames = [individual._frames for individual in population.individuals]
     max_distance = [individual.farthest_x for individual in population.individuals]
     fitness = [individual.fitness for individual in population.individuals]
     wins = [sum([individual.did_win for individual in population.individuals])]
 
     write_header = True
+    #si ya tengo hecho el header, no lo sobreescribo mas adelante
     if os.path.exists(f):
         write_header = False
 
@@ -278,16 +295,17 @@ def save_stats(population: Population, fname: str):
             writer.writeheader()
 
         row = {}
-        # Create a row to insert into csv
+        # creo una fila para agregarla al csv
         for tracker_name, tracker_object in trackers:
             curr_stats = _calc_stats(tracker_object)
             for curr_stat, stat_name in zip(curr_stats, stats):
                 entry_name = '{}_{}'.format(tracker_name, stat_name)
                 row[entry_name] = curr_stat
 
-        # Write row
+        # escribo la fila
         writer.writerow(row)
 
+#cargo las estadisticas
 def load_stats(path_to_stats: str, normalize: Optional[bool] = False):
     data = {}
 
@@ -296,6 +314,7 @@ def load_stats(path_to_stats: str, normalize: Optional[bool] = False):
     trackers = None
     stats_names = None
 
+    #abro el archivo en modo lectura
     with open(path_to_stats, 'r') as csvfile:
         reader = csv.DictReader(csvfile)
 
@@ -316,7 +335,8 @@ def load_stats(path_to_stats: str, normalize: Optional[bool] = False):
                 for stat_name in stats_names:
                     value = float(line['{}_{}'.format(tracker, stat_name)])
                     data[tracker][stat_name].append(value)
-        
+    
+    # normalizo los stats si es que se requiere
     if normalize:
         factors = {}
         for tracker in trackers:
@@ -339,6 +359,7 @@ def load_stats(path_to_stats: str, normalize: Optional[bool] = False):
 
     return data
 
+#determino y devuelvo la cantidad de entradas de la red neuronal
 def get_num_inputs(config: Config) -> int:
     _, viz_width, viz_height = config.NeuralNetwork.input_dims
     if config.NeuralNetwork.encode_row:
@@ -347,10 +368,11 @@ def get_num_inputs(config: Config) -> int:
         num_inputs = viz_width * viz_height
     return num_inputs
 
+#determino el numero de parametros entrenables 
 def get_num_trainable_parameters(config: Config) -> int:
     num_inputs = get_num_inputs(config)
     hidden_layers = config.NeuralNetwork.hidden_layer_architecture
-    num_outputs = 6  # U, D, L, R, A, B
+    num_outputs = 6  # abajo, arriba, izq, derecha, a, b
 
     layers = [num_inputs] + hidden_layers + [num_outputs]
     num_params = 0
