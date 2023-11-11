@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPainter, QBrush, QPen, QPolygonF, QColor, QImage, QPixm
 from PyQt5.QtCore import Qt, QPointF, QTimer, QRect
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel
 from PIL import Image
-from PIL.ImageQt import ImageQt
+from PIL import ImageQt
 from typing import Tuple, List, Optional
 import random
 import sys
@@ -338,8 +338,11 @@ class InformationWidget(QtWidgets.QWidget):
 
 
 class MainWindow(QtWidgets.QMainWindow):
+    
+    # Constructor
     def __init__(self, config: Optional[Config] = None):
         super().__init__()
+
         global args
         self.config = config
         self.top = 150
@@ -349,19 +352,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.title = 'Super Mario Bros AI'
         self.current_generation = 0
-        # This is the generation that is actual 0. If you load individuals then you might end up starting at gen 12, in which case
-        # gen 12 would be the true 0
+        # Esta es la generación real 0. Si cargas individuos, entonces podrías terminar comenzando en la generación 12, en cuyo caso
+        # gen 12 sería el verdadero 0
         self._true_zero_gen = 0
 
         self._should_display = True
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._update)
-        # Keys correspond with B, NULL, SELECT, START, U, D, L, R, A
-        # index                0  1     2       3      4  5  6  7  8
+        # Las teclas corresponden con B, NULL, SELECT, START, U, D, L, R, A
+        # index                       0  1     2       3      4  5  6  7  8
         self.keys = np.array( [0, 0,    0,      0,     0, 0, 0, 0, 0], np.int8)
 
-        # I only allow U, D, L, R, A, B and those are the indices in which the output will be generated
-        # We need a mapping from the output to the keys above
+        # Solo permito U, D, L, R, A, B y esos son los índices en los que se generará la salida.
+        # Necesitamos un mapeo desde la salida a las claves anteriores
         self.ouput_to_keys_map = {
             0: 4,  # U
             1: 5,  # D
@@ -371,13 +374,14 @@ class MainWindow(QtWidgets.QMainWindow):
             5: 0   # B
         }
 
-        # Initialize the starting population
+        # Inicializar la población inicial
         individuals: List[Individual] = []
 
-        # Load any individuals listed in the args.load_inds
+        # ------------------------------------------------------------------------------------------
+        # Cargar las personas enumeradas en args.load_inds
         num_loaded = 0
         if args.load_inds:
-            # Overwrite the config file IF one is not specified
+            # Sobrescriba el archivo de configuración SI no se especifica uno
             if not self.config:
                 try:
                     self.config = Config(os.path.join(args.load_file, 'settings.config'))
@@ -391,20 +395,21 @@ class MainWindow(QtWidgets.QMainWindow):
                     ind_number = int(ind_name[len('best_ind_gen'):])
                     if ind_number in set_of_inds:
                         individual = load_mario(args.load_file, ind_name, self.config)
-                        # Set debug stuff if needed
+                        # Configurar elementos de depuración si es necesario
                         if args.debug:
                             individual.name = f'm{num_loaded}_loaded'
                             individual.debug = True
                         individuals.append(individual)
                         num_loaded += 1
             
-            # Set the generation
-            self.current_generation = max(set_of_inds) + 1  # +1 becauase it's the next generation
+            # Establecer la generación
+            self.current_generation = max(set_of_inds) + 1  # +1 porque es la próxima generación
             self._true_zero_gen = self.current_generation
 
-        # Load any individuals listed in args.replay_inds
+        # ------------------------------------------------------------------------------------------
+        # Cargue las personas enumeradas en args.replay_inds
         if args.replay_inds:
-            # Overwrite the config file IF one is not specified
+            # Sobrescriba el archivo de configuración SI no se especifica uno
             if not self.config:
                 try:
                     self.config = Config(os.path.join(args.replay_file, 'settings.config'))
@@ -416,14 +421,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 fname = os.path.join(args.replay_file, ind_name)
                 if os.path.exists(fname):
                     individual = load_mario(args.replay_file, ind_name, self.config)
-                    # Set debug stuff if needed
+                    # Configure elementos de depuración si es necesario
                     if args.debug:
                         individual.name= f'm_gen{ind_gen}_replay'
                         individual.debug = True
                     individuals.append(individual)
                 else:
                     raise Exception(f'No individual named {ind_name} under {args.replay_file}')
-        # If it's not a replay then we need to continue creating individuals
+        # ------------------------------------------------------------------------------------------
+        # Si no es una repetición entonces tenemos que seguir creando individuos.
         else:
             num_parents = max(self.config.Selection.num_parents - num_loaded, 0)
             for _ in range(num_parents):
@@ -441,29 +447,30 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.mario = self.population.individuals[self._current_individual]
         
-        self.max_distance = 0  # Track farthest traveled in level
+        self.max_distance = 0  # Track más recorrido en nivel
         self.max_fitness = 0.0
         self.env = retro.make(game='SuperMarioBros-Nes', state=f'Level{self.config.Misc.level}')
 
-        # Determine the size of the next generation based off selection type
+        # Determinar el tamaño de la próxima generación según el tipo de selección.
         self._next_gen_size = None
         if self.config.Selection.selection_type == 'plus':
             self._next_gen_size = self.config.Selection.num_parents + self.config.Selection.num_offspring
         elif self.config.Selection.selection_type == 'comma':
             self._next_gen_size = self.config.Selection.num_offspring
 
-        # If we aren't displaying we need to reset the environment to begin with
+        # ------------------------------------------------------------------------------------------
+        # Si no estamos mostrando, necesitamos restablecer el entorno para empezar.
         if args.no_display:
             self.env.reset()
         else:
             self.init_window()
 
-            # Set the generation in the label if needed
+            # Establezca la generación en la etiqueta si es necesario
             if args.load_inds:
                 txt = "<font color='red'>" + str(self.current_generation + 1) + '</font>'  # +1 because we switch from 0 to 1 index
                 self.info_window.generation.setText(txt)
 
-            # if this is a replay then just set current_individual to be 'replay' and set generation
+            # Si se trata de una repetición, simplemente configure current_individual como 'repetición' y configure la generación.
             if args.replay_file:
                 self.info_window.current_individual.setText('Replay')
                 txt = f"<font color='red'>{args.replay_inds[self._current_individual] + 1}</font>"
@@ -476,6 +483,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._timer.start(1000 // 60)
 
+    # Funcion que genera la ventana
     def init_window(self) -> None:
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
@@ -779,56 +787,58 @@ class MainWindow(QtWidgets.QMainWindow):
 def parse_args():
     parser = argparse.ArgumentParser(description='Super Mario Bros AI')
 
+    # @NOTA: se definen los argumentos que le podemos pasar al ejecutar el archivo
     # Config
-    parser.add_argument('-c', '--config', dest='config', required=False, help='config file to use')
+    parser.add_argument('-c', '--config', dest='config', required=False, help='archivo de configuración para usar')
     # Load arguments
-    parser.add_argument('--load-file', dest='load_file', required=False, help='/path/to/population that you want to load individuals from')
-    parser.add_argument('--load-inds', dest='load_inds', required=False, help='[start,stop] (inclusive) or ind1,ind2,... that you wish to load from the file')
+    parser.add_argument('--load-file', dest='load_file', required=False, help='/ruta/a/población desde la que desea cargar individuos')
+    parser.add_argument('--load-inds', dest='load_inds', required=False, help='[inicio,parada] (inclusive) o ind1,ind2,... que desea cargar desde el archivo')
     # No display
-    parser.add_argument('--no-display', dest='no_display', required=False, default=False, action='store_true', help='If set, there will be no Qt graphics displayed and FPS is increased to max')
+    parser.add_argument('--no-display', dest='no_display', required=False, default=False, action='store_true', help='Si se configura, no se mostrarán gráficos Qt y los FPS aumentarán al máximo')
     # Debug
-    parser.add_argument('--debug', dest='debug', required=False, default=False, action='store_true', help='If set, certain debug messages will be printed')
+    parser.add_argument('--debug', dest='debug', required=False, default=False, action='store_true', help='Si se configura, se imprimirán ciertos mensajes de depuración')
     # Replay arguments
-    parser.add_argument('--replay-file', dest='replay_file', required=False, default=None, help='/path/to/population that you want to replay from')
-    parser.add_argument('--replay-inds', dest='replay_inds', required=False, default=None, help='[start,stop] (inclusive) or ind1,ind2,ind50,... or [start,] that you wish to replay from file')
+    parser.add_argument('--replay-file', dest='replay_file', required=False, default=None, help='/ruta/a/población desde la que desea reproducir')
+    parser.add_argument('--replay-inds', dest='replay_inds', required=False, default=None, help='[inicio,parada] (inclusive) o ind1,ind2,ind50,... o [inicio,] que desea reproducir desde el archivo')
 
     args = parser.parse_args()
     
     load_from_file = bool(args.load_file) and bool(args.load_inds)
     replay_from_file = bool(args.replay_file) and bool(args.replay_inds)
 
-    # Load from file checks
+    # checkea que no sea --load-file y --load-inds al mismo tiempo
     if bool(args.load_file) ^ bool(args.load_inds):
         parser.error('--load-file and --load-inds must be used together.')
+    # si tenemos que cargar un archivo
     if load_from_file:
-        # Convert the load_inds to be a list
-        # Is it a range?
+        # Convierte load_inds en una lista
+        # ¿Es un rango?
         if '[' in args.load_inds and ']' in args.load_inds:
             args.load_inds = args.load_inds.replace('[', '').replace(']', '')
             ranges = args.load_inds.split(',')
             start_idx = int(ranges[0])
             end_idx = int(ranges[1])
             args.load_inds = list(range(start_idx, end_idx + 1))
-        # Otherwise it's a list of individuals to load
+        # De lo contrario, es una lista de individuos para cargar.
         else:
             args.load_inds = [int(ind) for ind in args.load_inds.split(',')]
 
-    # Replay from file checks
+    # Reproducir desde comprobaciones de archivos
     if bool(args.replay_file) ^ bool(args.replay_inds):
         parser.error('--replay-file and --replay-inds must be used together.')
     if replay_from_file:
-        # Convert the replay_inds to be a list
-        # is it a range?
+        # Convertir replay_inds en una lista
+        # ¿Es un rango?
         if '[' in args.replay_inds and ']' in args.replay_inds:
             args.replay_inds = args.replay_inds.replace('[', '').replace(']', '')
             ranges = args.replay_inds.split(',')
             has_end_idx = bool(ranges[1])
             start_idx = int(ranges[0])
-            # Is there an end idx? i.e. [12,15]
+            # ¿Existe un idx final? es decir [12,15]
             if has_end_idx:
                 end_idx = int(ranges[1])
                 args.replay_inds = list(range(start_idx, end_idx + 1))
-            # Or is it just a start? i.e. [12,]
+            # ¿O es sólo un comienzo? es decir [12,]
             else:
                 end_idx = start_idx
                 for fname in os.listdir(args.replay_file):
@@ -837,14 +847,14 @@ def parse_args():
                         if ind_num > end_idx:
                             end_idx = ind_num
                 args.replay_inds = list(range(start_idx, end_idx + 1))
-        # Otherwise it's a list of individuals
+        # De lo contrario es una lista de individuos
         else:
             args.replay_inds = [int(ind) for ind in args.replay_inds.split(',')]
 
     if replay_from_file and load_from_file:
         parser.error('Cannot replay and load from a file.')
 
-    # Make sure config AND/OR [(load_file and load_inds) or (replay_file and replay_inds)]
+    # Asegúrese de que la configuración AND/OR [(load_file and load_inds) or (replay_file and replay_inds)]
     if not (bool(args.config) or (load_from_file or replay_from_file)):
         parser.error('Must specify -c and/or [(--load-file and --load-inds) or (--replay-file and --replay-inds)]')
 
@@ -853,7 +863,11 @@ def parse_args():
 if __name__ == "__main__":
     global args
     args = parse_args()
+
+    print(args)
+    
     config = None
+    # cargamos la configuracion si la tenemos especificada
     if args.config:
         config = Config(args.config)
 
