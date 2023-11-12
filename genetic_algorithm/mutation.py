@@ -2,28 +2,28 @@ import numpy as np
 from typing import List, Union, Optional
 from .individual import Individual
 
-
+# Define diferentes metodos para realizar la mutacion
 def gaussian_mutation(chromosome: np.ndarray, prob_mutation: float, 
                       mu: List[float] = None, sigma: List[float] = None,
                       scale: Optional[float] = None) -> None:
     """
-    Perform a gaussian mutation for each gene in an individual with probability, prob_mutation.
-    If mu and sigma are defined then the gaussian distribution will be drawn from that,
-    otherwise it will be drawn from N(0, 1) for the shape of the individual.
+    Se realiza la mutacion gaussiana para cada gen en el individuo a partir de la probabilidad.
+    Si mu y sigma estan definidos entonces la distribucion gaussiana se define a partir de esos valores,
+    en caso contrario se obtienen de N(0, 1) a partir del tamaño del individuo
     """
-    # Determine which genes will be mutated
+    # Determina que genes seran los reciban una mutacion
     mutation_array = np.random.random(chromosome.shape) < prob_mutation
-    # If mu and sigma are defined, create gaussian distribution around each one
+    # Si mu y sigma estan definidos, se crea la distribucion gaussiana para cada uno
     if mu and sigma:
         gaussian_mutation = np.random.normal(mu, sigma)
-    # Otherwise center around N(0,1)
+    # En caso contrario, se centra alrededor de N(0,1)
     else:
         gaussian_mutation = np.random.normal(size=chromosome.shape)
     
     if scale:
         gaussian_mutation[mutation_array] *= scale
 
-    # Update
+    # Actualizacion del cromosoma
     chromosome[mutation_array] += gaussian_mutation[mutation_array]
 
 def random_uniform_mutation(chromosome: np.ndarray, prob_mutation: float,
@@ -31,10 +31,9 @@ def random_uniform_mutation(chromosome: np.ndarray, prob_mutation: float,
                             high: Union[List[float], float]
                             ) -> None:
     """
-    Randomly mutate each gene in an individual with probability, prob_mutation.
-    If a gene is selected for mutation it will be assigned a value with uniform probability
-    between [low, high).
-    @Note [low, high) is defined for each gene to help get the full range of possible values
+    Se muta de forma aleatoria cada gen de un individuo a partir de la probabilidad.
+    Si un gen es seleccionado, se le asignara un valor con una probabilidad uniforme entre [low,high)
+    [low, high) esta definido para cada gen para abarcar todo el rango posible de valores
     """
     assert type(low) == type(high), 'low and high must have the same type'
     mutation_array = np.random.random(chromosome.shape) < prob_mutation
@@ -46,8 +45,8 @@ def random_uniform_mutation(chromosome: np.ndarray, prob_mutation: float,
 
 def uniform_mutation_with_respect_to_best_individual(chromosome: np.ndarray, best_chromosome: np.ndarray, prob_mutation: float) -> None:
     """
-    Ranomly mutate each gene in an individual with probability, prob_mutation.
-    If a gene is selected for mutation it will nudged towards the gene from the best individual.
+    Se muta de forma aleatoria cada gen de un individuo a partir de la probabilidad.
+    Si el gen es elegido para mutar, se busca acercar su valor al valor del mejor cromosoma (individuo).
     """
     mutation_array = np.random.random(chromosome.shape) < prob_mutation
     uniform_mutation = np.random.uniform(size=chromosome.shape)
@@ -57,6 +56,10 @@ def cauchy_mutation(individual: np.ndarray, scale: float) -> np.ndarray:
     pass
 
 def exponential_mutation(chromosome: np.ndarray, xi: Union[float, np.ndarray], prob_mutation: float) -> None:
+    """
+    Se muta de forma aleatoria cada gen de un individuo a partir de la probabilidad.
+    Mutacion exponencial basada en funciones que no se de donde saca
+    """
     mutation_array = np.random.random(chromosome.shape) < prob_mutation
     # Fill xi if necessary
     if not isinstance(xi, np.ndarray):
@@ -85,6 +88,10 @@ def exponential_mutation(chromosome: np.ndarray, xi: Union[float, np.ndarray], p
     chromosome[mutation_array] += delta[mutation_array]
 
 def mmo_mutation(chromosome: np.ndarray, prob_mutation: float) -> None:
+    """
+    Se muta de forma aleatoria cada gen de un individuo a partir de la probabilidad.
+    Mutacion que trabaja con un delta que consiste en una normal y una distribucion de cauchy
+    """
     from scipy import stats
     mutation_array = np.random.random(chromosome.shape) < prob_mutation
     normal = np.random.normal(size=chromosome.shape)  # Eq 11.21
