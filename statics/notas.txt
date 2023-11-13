@@ -51,3 +51,13 @@ Las formulas salen de https://stackoverflow.com/questions/22457941/simulated-bin
 -fun uniform_binary_crossover > define el metodo de cruza donde se crea una mascara con 0 y 1. 
 -fun single_point_binary_crossover > define el metodo de cruza donde se elige un punto del cromosoma de los padres y se hace un swap de
 los bits para crear a los hijos. Aca hace algo mas complicado y no lo entiendo
+
+
+
+
+comandos:
+- entrenamiento
+python .\smb_ai.py --config "settings.config" --no-display --debug
+
+- correr el mejor de una gen (em este caso 19)
+python smb_ai.py --replay-file "/path/to/save/individuals/" --replay-inds 19
