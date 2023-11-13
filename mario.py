@@ -68,7 +68,7 @@ class Mario(Individual):
         self.game_score = None
         self.did_win = False
 
-        # Esto es principalmente para "ver" a Mario ganar. #TODO: es la animacion se puede sacar
+        # Esto es principalmente para "ver" a Mario ganar. 
         self.allow_additional_time  = self.config.Misc.allow_additional_time_for_flagpole
         self.additional_timesteps = 0
         self.max_additional_timesteps = int(60*2.5)
@@ -102,7 +102,7 @@ class Mario(Individual):
 
         self._fitness = self.config.GeneticAlgorithm.fitness_func(frames, distance, score, self.did_win)
 
-    #TODO: esto arma la grilla para detectar que elementos se encuentran en ella, no?
+    #esto arma la grilla para detectar que elementos se encuentran en ella
     def set_input_as_array(self, ram, tiles) -> None:
         mario_row, mario_col = SMB.get_mario_row_col(ram)
         arr = []
@@ -146,7 +146,7 @@ class Mario(Individual):
             self.x_dist = SMB.get_mario_location_in_level(ram).x
             self.game_score = SMB.get_mario_score(ram)
             
-            # si llegamos a la meta, printeamos un mensaje
+            # si llegamos a la meta, printeamos un mensaje por consola, es necesario correr el demo con --debug
             if ram[0x001D] == 3:
                 self.did_win = True
                 if not self._printed and self.debug:
@@ -169,10 +169,11 @@ class Mario(Individual):
             if self.allow_additional_time and self.did_win:
                 self.additional_timesteps += 1
             
-            #si me paso del maximo de timesteps, mato a mario #TODO ver que onda el porque 60*3
+            #si me paso del maximo de timesteps, mato a mario 
             if self.allow_additional_time and self.additional_timesteps > self.max_additional_timesteps:
                 self.is_alive = False
                 return False
+            
             elif not self.did_win and self._frames_since_progress > 60*3:
                 self.is_alive = False
                 return False            
@@ -186,7 +187,10 @@ class Mario(Individual):
 
         self.set_input_as_array(ram, tiles)
 
-        # calculo la salida
+        
+        # --------------------------------------------------------------------------------------------------
+        #                           calculo la salida
+        # --------------------------------------------------------------------------------------------------
         output = self.network.feed_forward(self.inputs_as_array)
         threshold = np.where(output > 0.5)[0]
         self.buttons_to_press.fill(0)  # limpio botones
