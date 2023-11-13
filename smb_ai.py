@@ -464,10 +464,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 num_loaded += 1
 
         self.best_fitness = 0.0
-        self._current_individual = 0
-        self.population = Population(individuals)
-
-        self.mario = self.population.individuals[self._current_individual]
+        self._current_individual = 0                        # iterador de individuos
+        self.population = Population(individuals)           # Tenemos una lista de individuos (Mario::class)
+        self.mario = self.population.individuals[self._current_individual] # individuo
         
         self.max_distance = 0  # Track más recorrido en nivel
         self.max_fitness = 0.0
@@ -561,7 +560,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
     def next_generation(self) -> None:
         self._increment_generation()
-        self._current_individual = 0
+        self._current_individual = 0    # reinicio el iterador individuos
 
         if not args.no_display:
             self.info_window.current_individual.setText('{}/{}'.format(self._current_individual + 1, self._next_gen_size))
@@ -717,12 +716,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.info_window.generation.setText(txt)
 
 
+    # ---- Esta es la funcion evalua cada uno de los individuos ------------------------------------
     def _update(self) -> None:
         """
         Este es el método de actualización principal que se llama según el temporizador de FPS.
         Aquí se realizan actualizaciones de algoritmos genéticos, actualizaciones de ventanas, etc.
         """
-        ret = self.env.step(self.mario.buttons_to_press)
+        ret = self.env.step(self.mario.buttons_to_press)        # ejecuto la siguiente accion
 
         if not args.no_display:
             if self._should_display:
@@ -735,9 +735,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.info_window.hide()
             self.game_window._update()
 
-        ram = self.env.get_ram()
-        tiles = SMB.get_tiles(ram)  # Grab tiles on the screen
-        enemies = SMB.get_enemy_locations(ram)
+        ram = self.env.get_ram()                                # estado actual del juego
+        tiles = SMB.get_tiles(ram)                              # procesa la grilla
+        enemies = SMB.get_enemy_locations(ram)                  # obtiene la localizacion de enemigos
 
         # self.mario.set_input_as_array(ram, tiles)
         self.mario.update(ram, tiles, self.keys, self.ouput_to_keys_map)
@@ -802,7 +802,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 self.game_window.screen = self.env.reset()
             
-            self.mario = self.population.individuals[self._current_individual]
+            self.mario = self.population.individuals[self._current_individual]  # siguiente individuo
 
             if not args.no_display:
                 self.viz.mario = self.mario
