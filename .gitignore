@@ -1,0 +1,7 @@
+ejem_old/
+ejem_old/*
+.python-version
+./__pycache__/
+./__pycache__/*
+*/__pycache__/
+*/__pycache__/*
