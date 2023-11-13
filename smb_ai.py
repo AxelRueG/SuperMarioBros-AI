@@ -368,6 +368,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.config = config
         self.top = 150
         self.left = 150
+        # tamaño de la ventana
         self.width = 1100
         self.height = 700
 
@@ -382,7 +383,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._timer.timeout.connect(self._update)
         # Las teclas corresponden con B, NULL, SELECT, START, U, D, L, R, A
         # index                       0  1     2       3      4  5  6  7  8
-        self.keys = np.array( [0, 0,    0,      0,     0, 0, 0, 0, 0], np.int8)
+        self.keys =        np.array([ 0, 0,    0,      0,     0, 0, 0, 0, 0 ], np.int8)
 
         # Solo permito U, D, L, R, A, B y esos son los índices en los que se generará la salida.
         # Necesitamos un mapeo desde la salida a las claves anteriores
@@ -504,7 +505,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._timer.start(1000 // 60)
 
-    # Funcion que genera la ventana
+    # ---- Funcion que genera la ventana -----------------------------------------------------------
     def init_window(self) -> None:
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
@@ -557,7 +558,6 @@ class MainWindow(QtWidgets.QMainWindow):
         }
         if k in m:
             self.keys[m[k]] = 0
-
         
     def next_generation(self) -> None:
         self._increment_generation()
@@ -566,7 +566,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not args.no_display:
             self.info_window.current_individual.setText('{}/{}'.format(self._current_individual + 1, self._next_gen_size))
 
-        # Calculate fitness
+        # calculo fitness
         # print(', '.join(['{:.2f}'.format(i.fitness) for i in self.population.individuals]))
 
         if args.debug:
