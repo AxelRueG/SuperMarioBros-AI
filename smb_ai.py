@@ -37,22 +37,32 @@ def draw_border(painter: QPainter, size: Tuple[float, float]) -> None:
     polygon = QPolygonF(qpoints)
     painter.drawPolygon(polygon)
 
+'''
+@NOTE: 
+    setPen -> Método para configurar el lápiz que se utilizará para dibujar.
+    setBrush -> Método para configurar el pincel que se utilizará para rellenar formas.
+'''
 
+
+# --------------------------------------------------------------------------------------------------
+#                           Grafica la grilla procesada
+# --------------------------------------------------------------------------------------------------
 class Visualizer(QtWidgets.QWidget):
     def __init__(self, parent, size, config: Config, nn_viz: NeuralNetworkViz):
         super().__init__(parent)
         self.size = size
         self.config = config
         self.nn_viz = nn_viz
-        self.ram = None
+        self.ram = None             # datos del juego en la memoria ram
         self.x_offset = 150
         self.tile_width, self.tile_height = self.config.Graphics.tile_size
         self.tiles = None
         self.enemies = None
         self._should_update = True
 
+    # ---- Dibuja el rectangulo de la region de interes --------------------------------------------
     def _draw_region_of_interest(self, painter: QPainter) -> None:
-        # Grab mario row/col in our tiles
+        # ubica a mario fila/col en la grilla
         mario = SMB.get_mario_location_on_screen(self.ram)
         mario_row, mario_col = SMB.get_mario_row_col(self.ram)
         x = mario_col
@@ -64,7 +74,7 @@ class Visualizer(QtWidgets.QWidget):
         start_row, viz_width, viz_height = self.config.NeuralNetwork.input_dims
         painter.drawRect(x*self.tile_width + 5 + self.x_offset, start_row*self.tile_height + 5, viz_width*self.tile_width, viz_height*self.tile_height)
 
-
+    # ---- Dibuja la grila de datos ----------------------------------------------------------------
     def draw_tiles(self, painter: QPainter):
         if not self.tiles:
             return
@@ -75,11 +85,11 @@ class Visualizer(QtWidgets.QWidget):
                 x_start = 5 + (self.tile_width * col) + self.x_offset
                 y_start = 5 + (self.tile_height * row)
 
-                loc = (row, col)
-                tile = self.tiles[loc]
+                tile = self.tiles[row, col]
 
+                # se define si es un block <static, enemy o mario>
                 if isinstance(tile, (StaticTileType, DynamicTileType, EnemyType)):
-                    rgb = ColorMap[tile.name].value
+                    rgb = ColorMap[tile.name].value    
                     color = QColor(*rgb)
                     painter.setBrush(QBrush(color))
                 else:
@@ -94,9 +104,9 @@ class Visualizer(QtWidgets.QWidget):
         if self._should_update:
             draw_border(painter, self.size)
             if not self.ram is None:
-                self.draw_tiles(painter)
-                self._draw_region_of_interest(painter)
-                self.nn_viz.show_network(painter)
+                self.draw_tiles(painter)                        # Grafica la grilla  
+                self._draw_region_of_interest(painter)          # Grafica el area de interes
+                self.nn_viz.show_network(painter)               # Grafica la red neuronal
         else:
             # draw_border(painter, self.size)
             painter.setPen(QColor(0, 0, 0))
@@ -111,6 +121,9 @@ class Visualizer(QtWidgets.QWidget):
         self.update()
 
 
+# --------------------------------------------------------------------------------------------------
+#                           Grafica la ventana de juego
+# --------------------------------------------------------------------------------------------------
 class GameWindow(QtWidgets.QWidget):
     def __init__(self, parent, size, config: Config):
         super().__init__(parent)
@@ -123,7 +136,7 @@ class GameWindow(QtWidgets.QWidget):
         self.layout.addWidget(self.img_label)
         self.setLayout(self.layout)
         
-
+    # ---- Grafica el widget del juego -------------------------------------------------------------
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
@@ -155,6 +168,10 @@ class GameWindow(QtWidgets.QWidget):
     def _update(self):
         self.update()
 
+
+# --------------------------------------------------------------------------------------------------
+#                       Grafica la informacion del individuo
+# --------------------------------------------------------------------------------------------------
 class InformationWidget(QtWidgets.QWidget):
     def __init__(self, parent, size, config):
         super().__init__(parent)
@@ -177,7 +194,7 @@ class InformationWidget(QtWidgets.QWidget):
         # Current Generation
         generation_label = QLabel()
         generation_label.setFont(font_bold)
-        generation_label.setText('Generation:')
+        generation_label.setText('Generacion:')
         generation_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.generation = QLabel()
         self.generation.setFont(normal_font)
@@ -207,7 +224,7 @@ class InformationWidget(QtWidgets.QWidget):
         # Best fitness
         best_fitness_label = QLabel()
         best_fitness_label.setFont(font_bold)
-        best_fitness_label.setText('Best Fitness:')
+        best_fitness_label.setText('Mejor Fitness:')
         best_fitness_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.best_fitness = QLabel()
         self.best_fitness.setFont(normal_font)
@@ -222,7 +239,7 @@ class InformationWidget(QtWidgets.QWidget):
         # Max Distance
         max_distance_label = QLabel()
         max_distance_label.setFont(font_bold)
-        max_distance_label.setText('Max Distance:')
+        max_distance_label.setText('Distancia Maxima:')
         max_distance_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.max_distance = QLabel()
         self.max_distance.setFont(normal_font)
@@ -252,7 +269,7 @@ class InformationWidget(QtWidgets.QWidget):
         # Trainable params
         trainable_params_label = QLabel()
         trainable_params_label.setFont(font_bold)
-        trainable_params_label.setText('Trainable Params:')
+        trainable_params_label.setText('Parámetros Entrenables:')
         trainable_params_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         trainable_params = QLabel()
         trainable_params.setFont(normal_font)
@@ -274,20 +291,20 @@ class InformationWidget(QtWidgets.QWidget):
             selection_txt = '{} + {}'.format(num_parents, num_offspring)
         else:
             raise Exception('Unkown Selection type "{}"'.format(selection_type))
-        selection_hbox = self._create_hbox('Offspring:', font_bold, selection_txt, normal_font)
+        selection_hbox = self._create_hbox('Descendencia:', font_bold, selection_txt, normal_font)
         ga_vbox.addLayout(selection_hbox)
 
         # Lifespan
         lifespan = self.config.Selection.lifespan
         lifespan_txt = 'Infinite' if lifespan == np.inf else str(lifespan)
-        lifespan_hbox = self._create_hbox('Lifespan:', font_bold, lifespan_txt, normal_font)
+        lifespan_hbox = self._create_hbox('Esperanza de vida:', font_bold, lifespan_txt, normal_font)
         ga_vbox.addLayout(lifespan_hbox)
 
         # Mutation rate
         mutation_rate = self.config.Mutation.mutation_rate
         mutation_type = self.config.Mutation.mutation_rate_type.capitalize()
         mutation_txt = '{} {}% '.format(mutation_type, str(round(mutation_rate*100, 2)))
-        mutation_hbox = self._create_hbox('Mutation:', font_bold, mutation_txt, normal_font)
+        mutation_hbox = self._create_hbox('Mutación:', font_bold, mutation_txt, normal_font)
         ga_vbox.addLayout(mutation_hbox)
 
         # Crossover
@@ -298,7 +315,7 @@ class InformationWidget(QtWidgets.QWidget):
             crossover_txt = 'Tournament({})'.format(self.config.Crossover.tournament_size)
         else:
             raise Exception('Unknown crossover selection "{}"'.format(crossover_selection))
-        crossover_hbox = self._create_hbox('Crossover:', font_bold, crossover_txt, normal_font)
+        crossover_hbox = self._create_hbox('Cruza:', font_bold, crossover_txt, normal_font)
         ga_vbox.addLayout(crossover_hbox)
 
         # SBX eta
@@ -318,6 +335,7 @@ class InformationWidget(QtWidgets.QWidget):
         self.grid.addLayout(info_vbox, 0, 0)
         self.grid.addLayout(ga_vbox, 0, 1)
 
+    # ---- grafica la segunda columna de datos -----------------------------------------------------
     def _create_hbox(self, title: str, title_font: QtGui.QFont,
                      content: str, content_font: QtGui.QFont) -> QHBoxLayout:
         title_label = QLabel()
@@ -337,6 +355,9 @@ class InformationWidget(QtWidgets.QWidget):
         return hbox
 
 
+# --------------------------------------------------------------------------------------------------
+#              Grafica la ventana principal, genera las cuzas y demas
+# --------------------------------------------------------------------------------------------------
 class MainWindow(QtWidgets.QMainWindow):
     
     # Constructor
@@ -502,7 +523,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.viz_window = Visualizer(self.centralWidget, (1100-514, 700), self.config, self.viz)
         self.viz_window.setGeometry(0, 0, 1100-514, 700)
         self.viz_window.setObjectName('viz_window')
-        self.viz_window.ram = self.env.get_ram()
+        self.viz_window.ram = self.env.get_ram() # Obtenemos el estado de la memoria ram
         
         self.info_window = InformationWidget(self.centralWidget, (514, 700-480), self.config)
         self.info_window.setGeometry(QRect(1100-514, 480, 514, 700-480))
@@ -571,9 +592,9 @@ class MainWindow(QtWidgets.QMainWindow):
         random.shuffle(self.population.individuals)
         next_pop = []
 
-        # Parents + offspring
+        # Padres + hijos
         if self.config.Selection.selection_type == 'plus':
-            # Decrement lifespan
+            # Disminución de la vida útil
             for individual in self.population.individuals:
                 individual.lifespan -= 1
 
@@ -586,10 +607,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 lifespan = individual.lifespan
                 name = individual.name
 
-                # If the indivdual would be alve, add it to the next pop
+                # Si el individuo estuviera vivo, agréguelo al siguiente pop.
                 if lifespan > 0:
                     m = Mario(config, chromosome, hidden_layer_architecture, hidden_activation, output_activation, lifespan)
-                    # Set debug if needed
+                    # depuración (si es necesario)
                     if args.debug:
                         m.name = f'{name}_life{lifespan}'
                         m.debug = True
@@ -597,6 +618,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         num_loaded = 0
 
+        # ------------------------------------------------------------------------------------------
+        #                             genero la nueva poblacion
+        # ------------------------------------------------------------------------------------------
         while len(next_pop) < self._next_gen_size:
             selection = self.config.Crossover.crossover_selection
             if selection == 'tournament':
@@ -610,8 +634,8 @@ class MainWindow(QtWidgets.QMainWindow):
             c1_params = {}
             c2_params = {}
 
-            # Each W_l and b_l are treated as their own chromosome.
-            # Because of this I need to perform crossover/mutation on each chromosome between parents
+            # Cada W_l y b_l se tratan como su propio cromosoma.
+            # Debido a esto necesito realizar un cruce/mutación en cada cromosoma entre padres
             for l in range(1, L):
                 p1_W_l = p1.network.params['W' + str(l)]
                 p2_W_l = p2.network.params['W' + str(l)]  
@@ -619,11 +643,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 p2_b_l = p2.network.params['b' + str(l)]
 
                 # Crossover
-                # @NOTE: I am choosing to perform the same type of crossover on the weights and the bias.
+                # @NOTE: realiza el mismo tipo de cruce en los pesos y el sesgo.
                 c1_W_l, c2_W_l, c1_b_l, c2_b_l = self._crossover(p1_W_l, p2_W_l, p1_b_l, p2_b_l)
 
                 # Mutation
-                # @NOTE: I am choosing to perform the same type of mutation on the weights and the bias.
+                # @NOTE: realiza el mismo tipo de mutación en los pesos y el sesgo.
                 self._mutation(c1_W_l, c2_W_l, c1_b_l, c2_b_l)
 
                 # Assign children from crossover/mutation
@@ -664,7 +688,7 @@ class MainWindow(QtWidgets.QMainWindow):
                    parent1_bias: np.ndarray, parent2_bias: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         eta = self.config.Crossover.sbx_eta
 
-        # SBX weights and bias
+        # SBX: pesos y bias
         child1_weights, child2_weights = SBX(parent1_weights, parent2_weights, eta)
         child1_bias, child2_bias =  SBX(parent1_bias, parent2_bias, eta)
 
@@ -695,8 +719,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _update(self) -> None:
         """
-        This is the main update method which is called based on the FPS timer.
-        Genetic Algorithm updates, window updates, etc. are performed here.
+        Este es el método de actualización principal que se llama según el temporizador de FPS.
+        Aquí se realizan actualizaciones de algoritmos genéticos, actualizaciones de ventanas, etc.
         """
         ret = self.env.step(self.mario.buttons_to_press)
 
@@ -729,7 +753,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.viz_window._update()
     
         if self.mario.is_alive:
-            # New farthest distance?
+            # ¿Nueva distancia más lejana?
             if self.mario.farthest_x > self.max_distance:
                 if args.debug:
                     print('New farthest distance:', self.mario.farthest_x)
@@ -748,11 +772,11 @@ class MainWindow(QtWidgets.QMainWindow):
             # Next individual
             self._current_individual += 1
 
-            # Are we replaying from a file?
+            # cargando desde un achivo?
             if args.replay_file:
                 if not args.no_display:
-                    # Set the generation to be whatever best individual is being ran (+1)
-                    # Check to see if there is a next individual, otherwise exit
+                    # Establece la generación para que sea el mejor individuo que se esté ejecutando (+1)
+                    # Verifique si hay un siguiente individuo; de lo contrario, salga
                     if self._current_individual >= len(args.replay_inds):
                         if args.debug:
                             print(f'Finished replaying {len(args.replay_inds)} best individuals')
@@ -761,7 +785,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     txt = f"<font color='red'>{args.replay_inds[self._current_individual] + 1}</font>"
                     self.info_window.generation.setText(txt)
             else:
-                # Is it the next generation?
+                # ¿Es la próxima generación?
                 if (self.current_generation > self._true_zero_gen and self._current_individual == self._next_gen_size) or\
                     (self.current_generation == self._true_zero_gen and self._current_individual == self.config.Selection.num_parents):
                     self.next_generation()
@@ -782,8 +806,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
             if not args.no_display:
                 self.viz.mario = self.mario
-        
 
+
+# --------------------------------------------------------------------------------------------------
+#                     parametros que podemos incluir al iniciar 
+# --------------------------------------------------------------------------------------------------
 def parse_args():
     parser = argparse.ArgumentParser(description='Super Mario Bros AI')
 
