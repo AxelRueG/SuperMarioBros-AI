@@ -58,7 +58,7 @@ class NeuralNetworkViz(QtWidgets.QWidget):
             h_offset = (((max_n - num_nodes)) * (2*self.neuron_radius + horizontal_space))/2
             activations = None
             if layer > 0:
-                activations = self.mario.network.params['A' + str(layer)]
+                activations = self.mario.network.params['y' + str(layer)]
 
             for node in range(num_nodes):
                 x_loc = node * (self.neuron_radius*2 + horizontal_space) + h_offset

@@ -105,7 +105,7 @@ class Visualizer(QtWidgets.QWidget):
             if not self.ram is None:
                 self.draw_tiles(painter)                        # Grafica la grilla  
                 self._draw_region_of_interest(painter)          # Grafica el area de interes
-                self.nn_viz.show_network(painter)               # Grafica la red neuronal
+                # self.nn_viz.show_network(painter)               # Grafica la red neuronal
         else:
             # draw_border(painter, self.size)
             painter.setPen(QColor(0, 0, 0))

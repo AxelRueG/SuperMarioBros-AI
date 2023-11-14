@@ -1,13 +1,12 @@
 import numpy as np
 from typing import Tuple, Optional, Union, Set, Dict, Any, List
-import random
 import os
 import csv
 import json
 
 from genetic_algorithm.individual import Individual
 from genetic_algorithm.population import Population
-from neural_network import FeedForwardNetwork, linear, sigmoid, tanh, relu, leaky_relu, ActivationFunction, get_activation_by_name
+from neural_network import FeedForwardNetwork, ActivationFunction, get_activation_by_name
 from utils import SMB, StaticTileType, EnemyType
 from config import Config
 
@@ -196,25 +195,21 @@ def save_mario(population_folder: str, individual_name: str, mario: Mario) -> No
     if not os.path.exists(population_folder):
         os.makedirs(population_folder)
 
-    # guardo settings.config
+    # ---- guardo settings.config ----
     if 'settings.json' not in os.listdir(population_folder):
         with open(os.path.join(population_folder, 'settings.json'), 'w') as config_file:
             json.dump(mario.config._config, config_file, indent=2)
     
-    # crea el directorio para el individual
+    # ---- crea el directorio para el individual ----
     individual_dir = os.path.join(population_folder, individual_name)
     os.makedirs(individual_dir)
 
+    # ---- Guarda los pesos ----
     L = len(mario.network.layer_nodes)
     for l in range(1, L):
         w_name = 'W' + str(l)
-        b_name = 'b' + str(l)
-
         weights = mario.network.params[w_name]
-        bias = mario.network.params[b_name]
-
         np.save(os.path.join(individual_dir, w_name), weights)
-        np.save(os.path.join(individual_dir, b_name), bias)
     
 #carga el archivo del individual
 def load_mario(population_folder: str, individual_name: str, config: Optional[Config] = None) -> Mario:
