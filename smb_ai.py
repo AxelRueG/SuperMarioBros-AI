@@ -18,7 +18,6 @@ from config import Config
 from nn_viz import NeuralNetworkViz
 from mario import Mario, save_mario, save_stats, get_num_trainable_parameters, get_num_inputs, load_mario
 
-from genetic_algorithm.individual import Individual
 from genetic_algorithm.population import Population
 from genetic_algorithm.selection import elitism_selection, tournament_selection, roulette_wheel_selection
 from genetic_algorithm.crossover import simulated_binary_crossover as SBX
@@ -209,7 +208,7 @@ class InformationWidget(QtWidgets.QWidget):
         # Current individual
         current_individual_label = QLabel()
         current_individual_label.setFont(font_bold)
-        current_individual_label.setText('Individual:')
+        current_individual_label.setText('Individuo:')
         current_individual_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.current_individual = QLabel()
         self.current_individual.setFont(normal_font)
@@ -397,7 +396,7 @@ class MainWindow(QtWidgets.QMainWindow):
         }
 
         # Inicializar la población inicial
-        individuals: List[Individual] = []
+        individuals: List[Mario] = []
 
         # ------------------------------------------------------------------------------------------
         # Cargar las personas enumeradas en args.load_inds

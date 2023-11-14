@@ -1,6 +1,5 @@
 import numpy as np
 from typing import List, Union, Optional
-from .individual import Individual
 
 # Se definen diferentes metodos para realizar la mutacion de los individuos
 def gaussian_mutation(chromosome: np.ndarray, prob_mutation: float, 

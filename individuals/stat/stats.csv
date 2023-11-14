@@ -1,0 +1,2 @@
+frames_mean,frames_median,frames_std,frames_min,frames_max,distance_mean,distance_median,distance_std,distance_min,distance_max,fitness_mean,fitness_median,fitness_std,fitness_min,fitness_max,wins_mean,wins_median,wins_std,wins_min,wins_max
+217.8,182.0,99.50859259380569,133.0,486.0,181.2,152.0,147.08351369205184,40.0,434.0,15413.223882232725,8112.2848481487745,16983.375731385273,1e-05,47694.904660202366,0.0,0.0,0.0,0.0,0.0

@@ -10,8 +10,6 @@ from neural_network import FeedForwardNetwork, linear, sigmoid, tanh, relu, leak
 from utils import SMB, StaticTileType, EnemyType
 from config import Config
 
-
-
 class Mario(Individual):
     def __init__(self,
                  config: Config,
@@ -83,16 +81,6 @@ class Mario(Individual):
     @property
     def fitness(self):
         return self._fitness
-
-    @property
-    def chromosome(self):
-        pass
-
-    def decode_chromosome(self):
-        pass
-
-    def encode_chromosome(self):
-        pass
     
     #calculo el fitness del frame
     def calculate_fitness(self):
