@@ -1,0 +1,47 @@
+{
+  "Graphics": {
+    "tile_size": [
+      16,
+      16
+    ],
+    "neuron_radius": 8
+  },
+  "Statistics": {
+    "save_best_individual_from_generation": "./individuals/test",
+    "save_population_stats": "./individuals/stat/stats.csv"
+  },
+  "NeuralNetwork": {
+    "input_dims": [
+      4,
+      7,
+      10
+    ],
+    "hidden_layer_architecture": [
+      9
+    ],
+    "hidden_node_activation": "relu",
+    "output_node_activation": "sigmoid",
+    "encode_row": true
+  },
+  "Crossover": {
+    "probability_sbx": 1.0,
+    "sbx_eta": 100,
+    "crossover_selection": "roulette",
+    "tournament_size": 5
+  },
+  "Mutation": {
+    "mutation_rate": 0.05,
+    "mutation_rate_type": "static",
+    "gaussian_mutation_scale": 0.2
+  },
+  "Selection": {
+    "num_parents": 10,
+    "num_offspring": 90,
+    "selection_type": "comma",
+    "lifespan": "inf"
+  },
+  "Misc": {
+    "level": "1-1",
+    "allow_additional_time_for_flagpole": true
+  }
+}

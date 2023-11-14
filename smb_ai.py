@@ -103,9 +103,10 @@ class Visualizer(QtWidgets.QWidget):
         if self._should_update:
             draw_border(painter, self.size)
             if not self.ram is None:
-                self.draw_tiles(painter)                        # Grafica la grilla  
-                self._draw_region_of_interest(painter)          # Grafica el area de interes
+                # self.draw_tiles(painter)                        # Grafica la grilla  
+                # self._draw_region_of_interest(painter)          # Grafica el area de interes
                 # self.nn_viz.show_network(painter)               # Grafica la red neuronal
+                pass
         else:
             # draw_border(painter, self.size)
             painter.setPen(QColor(0, 0, 0))
@@ -636,30 +637,20 @@ class MainWindow(QtWidgets.QMainWindow):
             # Debido a esto necesito realizar un cruce/mutación en cada cromosoma entre padres
             for l in range(1, L):
                 p1_W_l = p1.network.params['W' + str(l)]
-                p2_W_l = p2.network.params['W' + str(l)]  
-                p1_b_l = p1.network.params['b' + str(l)]
-                p2_b_l = p2.network.params['b' + str(l)]
+                p2_W_l = p2.network.params['W' + str(l)]
 
                 # Crossover
-                # @NOTE: realiza el mismo tipo de cruce en los pesos y el sesgo.
-                c1_W_l, c2_W_l, c1_b_l, c2_b_l = self._crossover(p1_W_l, p2_W_l, p1_b_l, p2_b_l)
-
+                c1_W_l, c2_W_l = self._crossover(p1_W_l, p2_W_l)
                 # Mutation
-                # @NOTE: realiza el mismo tipo de mutación en los pesos y el sesgo.
-                self._mutation(c1_W_l, c2_W_l, c1_b_l, c2_b_l)
+                self._mutation(c1_W_l, c2_W_l)
 
                 # Assign children from crossover/mutation
                 c1_params['W' + str(l)] = c1_W_l
                 c2_params['W' + str(l)] = c2_W_l
-                c1_params['b' + str(l)] = c1_b_l
-                c2_params['b' + str(l)] = c2_b_l
 
                 #  Clip to [-1, 1]
                 np.clip(c1_params['W' + str(l)], -1, 1, out=c1_params['W' + str(l)])
                 np.clip(c2_params['W' + str(l)], -1, 1, out=c2_params['W' + str(l)])
-                np.clip(c1_params['b' + str(l)], -1, 1, out=c1_params['b' + str(l)])
-                np.clip(c2_params['b' + str(l)], -1, 1, out=c2_params['b' + str(l)])
-
 
             c1 = Mario(self.config, c1_params, p1.hidden_layer_architecture, p1.hidden_activation, p1.output_activation, p1.lifespan)
             c2 = Mario(self.config, c2_params, p2.hidden_layer_architecture, p2.hidden_activation, p2.output_activation, p2.lifespan)
@@ -682,18 +673,13 @@ class MainWindow(QtWidgets.QMainWindow):
         random.shuffle(next_pop)
         self.population.individuals = next_pop
 
-    def _crossover(self, parent1_weights: np.ndarray, parent2_weights: np.ndarray,
-                   parent1_bias: np.ndarray, parent2_bias: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def _crossover(self, parent1_weights: np.ndarray, parent2_weights: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         eta = self.config.Crossover.sbx_eta
-
-        # SBX: pesos y bias
+        # SBX: pesos
         child1_weights, child2_weights = SBX(parent1_weights, parent2_weights, eta)
-        child1_bias, child2_bias =  SBX(parent1_bias, parent2_bias, eta)
+        return child1_weights, child2_weights
 
-        return child1_weights, child2_weights, child1_bias, child2_bias
-
-    def _mutation(self, child1_weights: np.ndarray, child2_weights: np.ndarray,
-                  child1_bias: np.ndarray, child2_bias: np.ndarray) -> None:
+    def _mutation(self, child1_weights: np.ndarray, child2_weights: np.ndarray) -> None:
         mutation_rate = self.config.Mutation.mutation_rate
         scale = self.config.Mutation.gaussian_mutation_scale
 
@@ -704,9 +690,6 @@ class MainWindow(QtWidgets.QMainWindow):
         gaussian_mutation(child1_weights, mutation_rate, scale=scale)
         gaussian_mutation(child2_weights, mutation_rate, scale=scale)
 
-        # Mutate bias
-        gaussian_mutation(child1_bias, mutation_rate, scale=scale)
-        gaussian_mutation(child2_bias, mutation_rate, scale=scale)
 
     def _increment_generation(self) -> None:
         self.current_generation += 1
