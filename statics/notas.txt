@@ -11,7 +11,7 @@ fun save_mario > guardar en un archivo binario los pesos y el bias de un modelo
 fun get_num_trainable_parameters > calcula y retorna cuanto elementos hay para entrenar
 fun get_num_inputs > calcula y retorna la cantidad de entradas en la red neuronal
 
-class Mario > suposicion > procesamiento del frame y lo relaciona con la red neuronal
+class Player > suposicion > procesamiento del frame y lo relaciona con la red neuronal
 
 
 [neuronal_network]

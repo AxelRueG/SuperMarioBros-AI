@@ -10,36 +10,41 @@ from neural_network import FeedForwardNetwork, ActivationFunction, get_activatio
 from utils import SMB, StaticTileType, EnemyType
 from config import Config
 
-class Mario(Individual):
+class Player(Individual):
     def __init__(self,
                  config: Config,
                  chromosome: Optional[Dict[str, np.ndarray]] = None,
-                 hidden_layer_architecture: List[int] = [12, 9],
-                 hidden_activation: Optional[ActivationFunction] = 'relu',
-                 output_activation: Optional[ActivationFunction] = 'sigmoid',
                  lifespan: Union[int, float] = np.inf,
-                 name: Optional[str] = None,
-                 debug: Optional[bool] = False,
+                 debug: Optional[bool] = False
                  ):
         
 
         self.config = config
 
         self.lifespan = lifespan
-        self.name = name
         self.debug = debug
 
-        self._fitness = 0  # Overall fitness
-        self._frames_since_progress = 0  # Número de frames desde que Mario avanzó hacia la meta
-        self._frames = 0  # Número de frames que Mario ha estado vivo
+        self._fitness = 0                # Overall fitness
+        self._frames_since_progress = 0  # Número de frames desde que Player avanzó hacia la meta
+        self._frames = 0                 # Número de frames que Player ha estado vivo
         
-        #seteo la config de la arquitectura de la capa oculta y la manera en la que se activan las neuronas
+        # seteo la config de la arquitectura de la capa oculta y la manera en la que se activan las neuronas
         self.hidden_layer_architecture = self.config.NeuralNetwork.hidden_layer_architecture
         self.hidden_activation = self.config.NeuralNetwork.hidden_node_activation
         self.output_activation = self.config.NeuralNetwork.output_node_activation
 
         self.start_row, self.viz_width, self.viz_height = self.config.NeuralNetwork.input_dims
 
+        # Solo permito U, D, L, R, A, B y esos son los índices en los que se generará la salida.
+        # Necesitamos un mapeo desde la salida a las claves anteriores
+        self.ouput_to_keys_map = {
+            0: 4,  # U
+            1: 5,  # D
+            2: 6,  # L
+            3: 7,  # R
+            4: 8,  # A
+            5: 0   # B
+        }
         
         if self.config.NeuralNetwork.encode_row:
             num_inputs = self.viz_width * self.viz_height + self.viz_height
@@ -66,7 +71,7 @@ class Mario(Individual):
         self.game_score = None
         self.did_win = False
 
-        # Esto es principalmente para "ver" a Mario ganar. 
+        # Esto es principalmente para "ver" a Player ganar. 
         self.allow_additional_time  = self.config.Misc.allow_additional_time_for_flagpole
         self.additional_timesteps = 0
         self.max_additional_timesteps = int(60*2.5)
@@ -114,14 +119,14 @@ class Mario(Individual):
 
         self.inputs_as_array[:self.viz_height*self.viz_width, :] = np.array(arr).reshape((-1,1))
         if self.config.NeuralNetwork.encode_row:
-            # Assign one-hot for mario row
+            # Asignar one-hot para mario row (marcamos la posicion en y de mario con un bit)
             row = mario_row - self.start_row
             one_hot = np.zeros((self.viz_height, 1))
             if row >= 0 and row < self.viz_height:
                 one_hot[row, 0] = 1
             self.inputs_as_array[self.viz_height*self.viz_width:, :] = one_hot.reshape((-1, 1))
 
-    def update(self, ram, tiles, buttons, ouput_to_buttons_map) -> bool:
+    def update(self, ram, tiles) -> bool:
         """
         Es el principal update para mario.
         toma los imputs del area del entorno y se alimenta mediante la red neuronal
@@ -138,10 +143,7 @@ class Mario(Individual):
             if ram[0x001D] == 3:
                 self.did_win = True
                 if not self._printed and self.debug:
-                    name = 'Mario '
-                    name += f'{self.name}' if self.name else ''
-                    print(f'{name} won')
-                    self._printed = True
+                    print(f'GANAMOS!!!')
                 if not self.allow_additional_time:
                     self.is_alive = False
                     return False
@@ -185,12 +187,12 @@ class Mario(Individual):
 
         # seteo los botones
         for b in threshold:
-            self.buttons_to_press[ouput_to_buttons_map[b]] = 1
+            self.buttons_to_press[ self.ouput_to_keys_map[b]] = 1
 
         return True
     
 #esta funcion guarda en un bin los pesos y el bias del modelo
-def save_mario(population_folder: str, individual_name: str, mario: Mario) -> None:
+def save_mario(population_folder: str, individual_name: str, mario: Player) -> None:
     # Make population folder if it doesnt exist
     if not os.path.exists(population_folder):
         os.makedirs(population_folder)
@@ -212,7 +214,7 @@ def save_mario(population_folder: str, individual_name: str, mario: Mario) -> No
         np.save(os.path.join(individual_dir, w_name), weights)
     
 #carga el archivo del individual
-def load_mario(population_folder: str, individual_name: str, config: Optional[Config] = None) -> Mario:
+def load_mario(population_folder: str, individual_name: str, config: Optional[Config] = None) -> Player:
     # se asegura que exista dentro de la carpeta population
     if not os.path.exists(os.path.join(population_folder, individual_name)):
         raise Exception(f'{individual_name} not found inside {population_folder}')
@@ -235,7 +237,7 @@ def load_mario(population_folder: str, individual_name: str, config: Optional[Co
             param = extension[0]
             chromosome[param] = np.load(os.path.join(population_folder, individual_name, fname))
         
-    mario = Mario(config, chromosome=chromosome)
+    mario = Player(config, chromosome=chromosome)
     return mario
 
 #calculo las estadisticas 
@@ -374,10 +376,10 @@ def get_num_trainable_parameters(config: Config) -> int:
 def fitness_func (frames, distance, game_score, did_win): 
     '''
     args:
-    - frames:     Number of frames that Mario has been alive for
+    - frames:     Number of frames that Player has been alive for
     - distance:   Total horizontal distance gone through the level
-    - game_score: Actual score Mario has received in the level through power-ups, coins, etc.
-    - did_win:    True/False if Mario beat the level
+    - game_score: Actual score Player has received in the level through power-ups, coins, etc.
+    - did_win:    True/False if Player beat the level
 
     return:
     - fitnes

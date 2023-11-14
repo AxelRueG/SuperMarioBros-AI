@@ -4,11 +4,11 @@ from PyQt5.QtGui import QPen, QColor, QBrush
 import sys
 from typing import List
 from neural_network import *
-from mario import Mario
+from mario import Player
 from config import Config
 
 class NeuralNetworkViz(QtWidgets.QWidget):
-    def __init__(self, parent, mario: Mario, size, config: Config):
+    def __init__(self, parent, mario: Player, size, config: Config):
         super().__init__(parent)
         self.mario = mario
         self.size = size

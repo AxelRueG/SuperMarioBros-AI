@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List
 from .individual import Individual
-# from ..mario import Mario
+# from ..mario import Player
 
 class Population(object):
     #crea una lista de individuos

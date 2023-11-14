@@ -16,7 +16,7 @@ import os
 from utils import SMB, EnemyType, StaticTileType, ColorMap, DynamicTileType
 from config import Config
 from nn_viz import NeuralNetworkViz
-from mario import Mario, save_mario, save_stats, get_num_trainable_parameters, get_num_inputs, load_mario
+from mario import Player, save_mario, save_stats, get_num_trainable_parameters, get_num_inputs, load_mario
 
 from genetic_algorithm.population import Population
 from genetic_algorithm.selection import elitism_selection, tournament_selection, roulette_wheel_selection
@@ -397,7 +397,7 @@ class MainWindow(QtWidgets.QMainWindow):
         }
 
         # Inicializar la población inicial
-        individuals: List[Mario] = []
+        individuals: List[Player] = []
 
         # ------------------------------------------------------------------------------------------
         # Cargar las personas enumeradas en args.load_inds
@@ -455,7 +455,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             num_parents = max(self.config.Selection.num_parents - num_loaded, 0)
             for _ in range(num_parents):
-                individual = Mario(self.config)
+                individual = Player(self.config)
                 # Set debug stuff if needed
                 if args.debug:
                     individual.name = f'm{num_loaded}'
@@ -465,7 +465,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.best_fitness = 0.0
         self._current_individual = 0                        # iterador de individuos
-        self.population = Population(individuals)           # Tenemos una lista de individuos (Mario::class)
+        self.population = Population(individuals)           # Tenemos una lista de individuos (Player::class)
         self.mario = self.population.individuals[self._current_individual] # individuo
         
         self.max_distance = 0  # Track más recorrido en nivel
@@ -608,7 +608,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 # Si el individuo estuviera vivo, agréguelo al siguiente pop.
                 if lifespan > 0:
-                    m = Mario(config, chromosome, hidden_layer_architecture, hidden_activation, output_activation, lifespan)
+                    m = Player(config, chromosome, hidden_layer_architecture, hidden_activation, output_activation, lifespan)
                     # depuración (si es necesario)
                     if args.debug:
                         m.name = f'{name}_life{lifespan}'
@@ -652,8 +652,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 np.clip(c1_params['W' + str(l)], -1, 1, out=c1_params['W' + str(l)])
                 np.clip(c2_params['W' + str(l)], -1, 1, out=c2_params['W' + str(l)])
 
-            c1 = Mario(self.config, c1_params, p1.hidden_layer_architecture, p1.hidden_activation, p1.output_activation, p1.lifespan)
-            c2 = Mario(self.config, c2_params, p2.hidden_layer_architecture, p2.hidden_activation, p2.output_activation, p2.lifespan)
+            c1 = Player(self.config, c1_params, p1.hidden_layer_architecture, p1.hidden_activation, p1.output_activation, p1.lifespan)
+            c2 = Player(self.config, c2_params, p2.hidden_layer_architecture, p2.hidden_activation, p2.output_activation, p2.lifespan)
 
             # Set debug if needed
             if args.debug:
@@ -722,7 +722,7 @@ class MainWindow(QtWidgets.QMainWindow):
         enemies = SMB.get_enemy_locations(ram)                  # obtiene la localizacion de enemigos
 
         # self.mario.set_input_as_array(ram, tiles)
-        self.mario.update(ram, tiles, self.keys, self.ouput_to_keys_map)
+        self.mario.update(ram, tiles)
         
         if not args.no_display:
             if self._should_display:
