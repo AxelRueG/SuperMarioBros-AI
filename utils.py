@@ -5,7 +5,7 @@ from enum import Enum, unique
 
 
 
-
+#es la posicion de memoria que ocupa el enemico dentro de la rom
 @unique
 class EnemyType(Enum):
     Green_Koopa1 = 0x00
