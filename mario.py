@@ -3,6 +3,7 @@ from typing import Tuple, Optional, Union, Set, Dict, Any, List
 import random
 import os
 import csv
+import json
 
 from genetic_algorithm.individual import Individual
 from genetic_algorithm.population import Population
@@ -88,7 +89,7 @@ class Mario(Individual):
         distance = self.x_dist
         score = self.game_score
 
-        self._fitness = self.config.GeneticAlgorithm.fitness_func(frames, distance, score, self.did_win)
+        self._fitness = fitness_func(frames, distance, score, self.did_win)
 
     #esto arma la grilla para detectar que elementos se encuentran en ella
     def set_input_as_array(self, ram, tiles) -> None:
@@ -196,9 +197,9 @@ def save_mario(population_folder: str, individual_name: str, mario: Mario) -> No
         os.makedirs(population_folder)
 
     # guardo settings.config
-    if 'settings.config' not in os.listdir(population_folder):
-        with open(os.path.join(population_folder, 'settings.config'), 'w') as config_file:
-            config_file.write(mario.config._config_text_file)
+    if 'settings.json' not in os.listdir(population_folder):
+        with open(os.path.join(population_folder, 'settings.json'), 'w') as config_file:
+            json.dump(mario.config._config, config_file, indent=2)
     
     # crea el directorio para el individual
     individual_dir = os.path.join(population_folder, individual_name)
@@ -223,7 +224,7 @@ def load_mario(population_folder: str, individual_name: str, config: Optional[Co
 
     # cargo la config
     if not config:
-        settings_path = os.path.join(population_folder, 'settings.config')
+        settings_path = os.path.join(population_folder, 'settings.json')
         config = None
         try:
             config = Config(settings_path)
@@ -374,3 +375,16 @@ def get_num_trainable_parameters(config: Config) -> int:
         num_params += L*L_next + L_next
 
     return num_params
+
+def fitness_func (frames, distance, game_score, did_win): 
+    '''
+    args:
+    - frames:     Number of frames that Mario has been alive for
+    - distance:   Total horizontal distance gone through the level
+    - game_score: Actual score Mario has received in the level through power-ups, coins, etc.
+    - did_win:    True/False if Mario beat the level
+
+    return:
+    - fitnes
+    '''
+    return max((distance**1.8) - (frames**1.5) + (min(max(distance-50, 0), 1) * 2500) + (did_win * 1e6), 0.00001)
