@@ -15,17 +15,17 @@ def save_mario(population_folder: str, individual_name: str, mario: Player) -> N
     # ---- guardo settings.config ----
     if 'settings.json' not in os.listdir(population_folder):
         with open(os.path.join(population_folder, 'settings.json'), 'w') as config_file:
-            json.dump(mario.config._config, config_file, indent=2)
+            json.dump(mario.config.__dict__, config_file, indent=2)
     
     # ---- crea el directorio para el individual ----
     individual_dir = os.path.join(population_folder, individual_name)
     os.makedirs(individual_dir)
 
     # ---- Guarda los pesos ----
-    L = len(mario.network.layer_nodes)
+    L = len(mario.nn.layer_nodes)
     for l in range(1, L):
         w_name = 'W' + str(l)
-        weights = mario.network.params[w_name]
+        weights = mario.nn.params[w_name]
         np.save(os.path.join(individual_dir, w_name), weights)
     
 # ---- carga el archivo del individual -------------------------------------------------------------

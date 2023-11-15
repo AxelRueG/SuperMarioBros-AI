@@ -57,15 +57,15 @@ class Genetico:
         while len(next_pop) < self.poblacion.num_individuals - 1:
             p1, p2 = tournament_selection(self.poblacion, 2, self.config.Crossover["tournament_size"])
 
-            L = len(p1.network.layer_nodes)
+            L = len(p1.nn.layer_nodes)
             c1_params = {}
             c2_params = {}
 
             # Cada W_l se tratan como su propio cromosoma.
             # Debido a esto necesito realizar un cruce/mutación en cada cromosoma entre padres
             for l in range(1, L):
-                p1_W_l = p1.network.params['W' + str(l)]
-                p2_W_l = p2.network.params['W' + str(l)]
+                p1_W_l = p1.nn.params['W' + str(l)]
+                p2_W_l = p2.nn.params['W' + str(l)]
 
                 # Crossover
                 c1_W_l, c2_W_l = self.crossover(p1_W_l, p2_W_l)

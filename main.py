@@ -19,6 +19,7 @@ class Game:
             folder = '/'.join(elems[:len(elems)-1])
             individuo_folder = elems[-1]
             self.mario = load_mario(op.abspath(folder), individuo_folder)
+            self.config = self.mario.config # setteo la configuracion guardada de ese jugador
         else:
             self.genetico = Genetico(self.config)
 
@@ -52,5 +53,6 @@ class Game:
 
 if __name__ == "__main__":
 
+    # game = Game('./individuals/test/best_ind_gen1')
     game = Game()
     game.run()

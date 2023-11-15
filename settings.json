@@ -7,10 +7,10 @@
     "Graphics": {
         "tile_size": [ 16, 16 ],
         "neuron_radius": 8,
-        "enable": false
+        "enable": true
     },
     "Statistics": {
-        "save_best_individual_from_generation": false,
+        "save_best_individual_from_generation": "./individuals/test",
         "save_population_stats": "./individuals/stat/stats.csv"
     },
     "NeuralNetwork": {
@@ -19,6 +19,9 @@
         "hidden_node_activation": "relu",
         "output_node_activation": "sigmoid",
         "encode_row": true
+    },
+    "Selection": {
+        "num_offspring": 90
     },
     "Crossover": {
         "probability_sbx": 1.0,
@@ -29,8 +32,5 @@
         "mutation_rate": 0.05,
         "mutation_rate_type": "static",
         "gaussian_mutation_scale": 0.2
-    },
-    "Selection": {
-        "num_offspring": 90
     }
 }
