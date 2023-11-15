@@ -14,14 +14,10 @@ class Player(Individual):
     def __init__(self,
                  config: Config,
                  chromosome: Optional[Dict[str, np.ndarray]] = None,
-                 lifespan: Union[int, float] = np.inf,
                  debug: Optional[bool] = False
                  ):
-        
 
         self.config = config
-
-        self.lifespan = lifespan
         self.debug = debug
 
         self._fitness = 0                # Overall fitness

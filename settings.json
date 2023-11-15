@@ -38,7 +38,7 @@
         "num_parents": 10,
         "num_offspring": 90,
         "selection_type": "comma",
-        "lifespan": "inf"
+        "esperanza_de_vida": "inf"
     },
     "Misc": {
         "level": "1-1",

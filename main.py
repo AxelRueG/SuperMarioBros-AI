@@ -295,10 +295,10 @@ class InformationWidget(QtWidgets.QWidget):
         ga_vbox.addLayout(selection_hbox)
 
         # Lifespan
-        lifespan = self.config.Selection.lifespan
-        lifespan_txt = 'Infinite' if lifespan == np.inf else str(lifespan)
-        lifespan_hbox = self._create_hbox('Esperanza de vida:', font_bold, lifespan_txt, normal_font)
-        ga_vbox.addLayout(lifespan_hbox)
+        esperanza_de_vida = self.config.Selection.esperanza_de_vida
+        esperanza_de_vida_txt = 'Infinite' if esperanza_de_vida == np.inf else str(esperanza_de_vida)
+        esperanza_de_vida_hbox = self._create_hbox('Esperanza de vida:', font_bold, esperanza_de_vida_txt, normal_font)
+        ga_vbox.addLayout(esperanza_de_vida_hbox)
 
         # Mutation rate
         mutation_rate = self.config.Mutation.mutation_rate
@@ -595,7 +595,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.config.Selection.selection_type == 'plus':
             # Disminución de la vida útil
             for individual in self.population.individuals:
-                individual.lifespan -= 1
+                individual.esperanza_de_vida -= 1
 
             for individual in self.population.individuals:
                 config = individual.config
@@ -603,15 +603,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 hidden_layer_architecture = individual.hidden_layer_architecture
                 hidden_activation = individual.hidden_activation
                 output_activation = individual.output_activation
-                lifespan = individual.lifespan
+                esperanza_de_vida = individual.esperanza_de_vida
                 name = individual.name
 
                 # Si el individuo estuviera vivo, agréguelo al siguiente pop.
-                if lifespan > 0:
-                    m = Player(config, chromosome, hidden_layer_architecture, hidden_activation, output_activation, lifespan)
+                if esperanza_de_vida > 0:
+                    m = Player(config, chromosome, hidden_layer_architecture, hidden_activation, output_activation, esperanza_de_vida)
                     # depuración (si es necesario)
                     if args.debug:
-                        m.name = f'{name}_life{lifespan}'
+                        m.name = f'{name}_life{esperanza_de_vida}'
                         m.debug = True
                     next_pop.append(m)
 
@@ -652,8 +652,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 np.clip(c1_params['W' + str(l)], -1, 1, out=c1_params['W' + str(l)])
                 np.clip(c2_params['W' + str(l)], -1, 1, out=c2_params['W' + str(l)])
 
-            c1 = Player(self.config, c1_params, p1.hidden_layer_architecture, p1.hidden_activation, p1.output_activation, p1.lifespan)
-            c2 = Player(self.config, c2_params, p2.hidden_layer_architecture, p2.hidden_activation, p2.output_activation, p2.lifespan)
+            c1 = Player(self.config, c1_params, p1.hidden_layer_architecture, p1.hidden_activation, p1.output_activation, p1.esperanza_de_vida)
+            c2 = Player(self.config, c2_params, p2.hidden_layer_architecture, p2.hidden_activation, p2.output_activation, p2.esperanza_de_vida)
 
             # Set debug if needed
             if args.debug:
