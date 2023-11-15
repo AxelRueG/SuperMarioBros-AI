@@ -1,11 +1,9 @@
 import numpy as np
 import random, os.path as op, math
-from typing import List, Optional, Dict, Tuple
-
+from typing import List, Optional, Tuple
 from config import Config
 
 from genetic_algorithm.utils import save_mario, load_mario
-
 from genetic_algorithm.gen_operator import tournament_selection, gaussian_mutation, simulated_binary_crossover as SBX
 from genetic_algorithm.individual import Player
 from genetic_algorithm.population import Population
@@ -22,18 +20,18 @@ class Genetico:
 
         individuos: List[Player] = []
 
-        # debo generer los individos alearoteos
+        # ---- Generar Individos Alearoteos ----
         for _ in range(self.config.Selection["num_offspring"]):
             individuos.append(Player(self.config))
 
-        # o debo cargarlos de algun archivo
+        # @TODO: otra forma puede ser levantar una poblacion desde un archivo
 
         self.poblacion = Population(individuos)
         self.player = self.poblacion.individuals[self.current]
 
 
     def next_generation(self) -> None:
-        
+
         print(f'---- Fin Generacion: {self.generacion} ----------------------------------------------')
         mejor_individuo = self.poblacion.fittest_individual
         self.best_fitness = mejor_individuo.fitness

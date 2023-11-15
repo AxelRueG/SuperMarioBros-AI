@@ -1,8 +1,6 @@
 import numpy as np
 from typing import Tuple, Optional, Union, Dict, List
-import os
-import csv
-import json
+import os, csv, json
 
 from genetic_algorithm.individual import Player
 from genetic_algorithm.population import Population

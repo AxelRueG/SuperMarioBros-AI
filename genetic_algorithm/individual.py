@@ -1,8 +1,8 @@
 import numpy as np
 from neural_network import FeedForwardNetwork, get_activation_by_name
 from utils import SMB, StaticTileType, EnemyType
-from typing import Optional, Dict
 from config import Config
+from typing import Optional, Dict
 
 class Player:
     def __init__(self,
