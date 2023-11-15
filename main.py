@@ -53,6 +53,8 @@ class Game:
 
 if __name__ == "__main__":
 
-    # game = Game('./individuals/test/best_ind_gen1')
-    game = Game()
+    #game = Game('./individuals/test/best_ind_gen10') #para ver la run x
+    game = Game() #para entrenar 
+
+
     game.run()

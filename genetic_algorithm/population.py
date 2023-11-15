@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List
-from .individual import Player
+from genetic_algorithm.player import Player
 
 class Population(object):
     #crea una lista de individuos

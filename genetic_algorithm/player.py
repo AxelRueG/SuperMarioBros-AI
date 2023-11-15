@@ -73,13 +73,12 @@ class Player:
         args:
         - frames:     Number of frames that Player has been alive for
         - distance:   Total horizontal distance gone through the level
-        - game_score: Actual score Player has received in the level through power-ups, coins, etc.
         - did_win:    True/False if Player beat the level
         '''
         frames = self.frames
-        distance = self.x_dist
-        score = self.game_score
+        distance = self.x_dist        
         did_win = self.did_win
+        
         self.fitness = max((distance**1.8) - (frames**1.5) + (min(max(distance-50, 0), 1) * 2500) + (did_win * 1e6), 0.00001)
 
     #esto arma la grilla para detectar que elementos se encuentran en ella
