@@ -26,7 +26,7 @@ class Genetico:
         individuos: List[Player] = []
 
         # debo generer los individos alearoteos
-        for _ in range(self.config.Selection.num_parents):
+        for _ in range(self.config.Selection.num_offspring):
             individuos.append(Player(self.config))
 
         # o debo cargarlos de algun archivo
@@ -139,15 +139,16 @@ class Game:
         env = retro.make(game='SuperMarioBros-Nes', state='Level1-1')
         obs = env.reset()
         while True:
-            env.render()
+            # env.render()
 
             ram = env.get_ram()                                # estado actual del juego
             tiles = SMB.get_tiles(ram)                              # procesa la grilla
 
             self.genetico.player.update(ram, tiles)
-
-            obs, rew, done, info = env.step(self.genetico.player.buttons_to_press)
             
+            obs, rew, done, info = env.step(self.genetico.player.buttons_to_press)
+            self.genetico.player.calculate_fitness()
+
             if not self.genetico.player.is_alive:
                 self.genetico.next_individuo()
                 env.reset()

@@ -7,7 +7,7 @@
         "neuron_radius": 8
     },
     "Statistics": {
-        "save_best_individual_from_generation": "./individuals/test",
+        "save_best_individual_from_generation": false,
         "save_population_stats": "./individuals/stat/stats.csv"
     },
     "NeuralNetwork": {
