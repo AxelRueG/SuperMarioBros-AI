@@ -4,13 +4,11 @@ from typing import List, Optional, Dict, Tuple
 
 from config import Config
 
-from mario import save_mario, load_mario
+from genetic_algorithm.utils import save_mario, load_mario
 
-from .selection import tournament_selection
-from .mutation import gaussian_mutation
-from .crossover import simulated_binary_crossover as SBX
-from .individual import Player
-from .population import Population
+from genetic_algorithm.gen_operator import tournament_selection, gaussian_mutation, simulated_binary_crossover as SBX
+from genetic_algorithm.individual import Player
+from genetic_algorithm.population import Population
 
 class Genetico:
     '''

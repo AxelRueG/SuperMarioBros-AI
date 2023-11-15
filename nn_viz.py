@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPen, QColor, QBrush
 import sys
 from typing import List
 from neural_network import *
-from mario import Player
+from genetic_algorithm.utils import Player
 from config import Config
 
 class NeuralNetworkViz(QtWidgets.QWidget):

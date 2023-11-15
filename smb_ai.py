@@ -16,12 +16,10 @@ import os
 from utils import SMB, EnemyType, StaticTileType, ColorMap, DynamicTileType
 from config import Config
 from nn_viz import NeuralNetworkViz
-from mario import Player, save_mario, save_stats, get_num_trainable_parameters, get_num_inputs, load_mario
+from genetic_algorithm.utils import Player, save_mario, save_stats, get_num_trainable_parameters, get_num_inputs, load_mario
 
 from genetic_algorithm.population import Population
-from genetic_algorithm.selection import elitism_selection, tournament_selection, roulette_wheel_selection
-from genetic_algorithm.crossover import simulated_binary_crossover as SBX
-from genetic_algorithm.mutation import gaussian_mutation
+from genetic_algorithm.gen_operator import elitism_selection, tournament_selection, roulette_wheel_selection, gaussian_mutation, simulated_binary_crossover as SBX
 
 normal_font = QtGui.QFont('Times', 11, QtGui.QFont.Normal)
 font_bold = QtGui.QFont('Times', 11, QtGui.QFont.Bold)
