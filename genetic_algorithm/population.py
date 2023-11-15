@@ -1,11 +1,10 @@
 import numpy as np
 from typing import List
-from .individual import Individual
-# from ..mario import Player
+from .individual import Player
 
 class Population(object):
     #crea una lista de individuos
-    def __init__(self, individuals: List[Individual]):
+    def __init__(self, individuals: List[Player]):
         self.individuals = individuals
     
     #devuelve la cantida de individuos
@@ -22,7 +21,7 @@ class Population(object):
         return (sum(individual.fitness for individual in self.individuals) / float(self.num_individuals))
 
     @property
-    def fittest_individual(self) -> Individual:
+    def fittest_individual(self) -> Player:
         return max(self.individuals, key = lambda individual: individual.fitness)
 
     def calculate_fitness(self) -> None:

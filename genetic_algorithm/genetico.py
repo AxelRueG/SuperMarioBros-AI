@@ -1,17 +1,16 @@
-import retro, random, math
-import os.path as op
 import numpy as np
+import random, os.path as op, math
+from typing import List, Optional, Dict, Tuple
 
-from mario import Player, load_mario, save_mario
-from utils import SMB
-
-from typing import Optional, Tuple, List
 from config import Config
 
-from genetic_algorithm.selection import tournament_selection
-from genetic_algorithm.mutation import gaussian_mutation
-from genetic_algorithm.crossover import simulated_binary_crossover as SBX
-from genetic_algorithm.population import Population
+from mario import save_mario, load_mario
+
+from .selection import tournament_selection
+from .mutation import gaussian_mutation
+from .crossover import simulated_binary_crossover as SBX
+from .individual import Player
+from .population import Population
 
 class Genetico:
     '''
@@ -125,35 +124,3 @@ class Genetico:
             self.player = self.poblacion.individuals[self.current]
         else:
             self.next_generation()
-
-class Game:
-
-    def __init__(self):
-        self.i = 0
-        self.done = False
-        self.config = Config('settings.json')
-        self.genetico = Genetico(self.config)
-        # self.mario = load_mario(op.abspath("individuals/test/"), "best_ind_gen1")
-
-    def run(self):
-        env = retro.make(game='SuperMarioBros-Nes', state='Level1-1')
-        obs = env.reset()
-        while True:
-            # env.render()
-
-            ram = env.get_ram()                                # estado actual del juego
-            tiles = SMB.get_tiles(ram)                              # procesa la grilla
-
-            self.genetico.player.update(ram, tiles)
-            
-            obs, rew, done, info = env.step(self.genetico.player.buttons_to_press)
-            self.genetico.player.calculate_fitness()
-
-            if not self.genetico.player.is_alive:
-                self.genetico.next_individuo()
-                env.reset()
-
-if __name__ == "__main__":
-
-    game = Game()
-    game.run()
