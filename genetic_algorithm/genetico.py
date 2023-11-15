@@ -23,7 +23,7 @@ class Genetico:
         individuos: List[Player] = []
 
         # debo generer los individos alearoteos
-        for _ in range(self.config.Selection.num_offspring):
+        for _ in range(self.config.Selection["num_offspring"]):
             individuos.append(Player(self.config))
 
         # o debo cargarlos de algun archivo
@@ -43,8 +43,8 @@ class Genetico:
         print(f'Ganadores: ~{(float(num_wins)/tam_pob*100):.2f}%')
 
         # ---- Guardar el mejor individuo de la generacion -----------------------------------------
-        if self.config.Statistics.save_best_individual_from_generation:
-            folder = self.config.Statistics.save_best_individual_from_generation
+        if self.config.Statistics["save_best_individual_from_generation"]:
+            folder = self.config.Statistics["save_best_individual_from_generation"]
             best_ind_name = 'best_ind_gen{}'.format(self.generacion)
             best_ind = self.poblacion.fittest_individual
             save_mario(folder, best_ind_name, best_ind)
@@ -56,7 +56,7 @@ class Genetico:
         #                             genero la nueva poblacion
         # ------------------------------------------------------------------------------------------
         while len(next_pop) < self.poblacion.num_individuals - 1:
-            p1, p2 = tournament_selection(self.poblacion, 2, self.config.Crossover.tournament_size)
+            p1, p2 = tournament_selection(self.poblacion, 2, self.config.Crossover["tournament_size"])
 
             L = len(p1.network.layer_nodes)
             c1_params = {}
@@ -97,17 +97,17 @@ class Genetico:
 
 
     def crossover(self, parent1_weights: np.ndarray, parent2_weights: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        eta = self.config.Crossover.sbx_eta
+        eta = self.config.Crossover["sbx_eta"]
         # SBX: pesos
         child1_weights, child2_weights = SBX(parent1_weights, parent2_weights, eta)
         return child1_weights, child2_weights
 
 
     def mutation(self, child1_weights: np.ndarray, child2_weights: np.ndarray) -> None:
-        mutation_rate = self.config.Mutation.mutation_rate
-        scale = self.config.Mutation.gaussian_mutation_scale
+        mutation_rate = self.config.Mutation["mutation_rate"]
+        scale = self.config.Mutation["gaussian_mutation_scale"]
 
-        if self.config.Mutation.mutation_rate_type == 'dynamic':
+        if self.config.Mutation["mutation_rate_type"] == 'dynamic':
             mutation_rate = mutation_rate / math.sqrt(self.generacion + 1)
         
         # Mutate weights

@@ -11,19 +11,51 @@ class Player:
                  debug: Optional[bool] = False
                  ):
 
+        # ---- variables de configuracion ----
         self.config = config
         self.debug = debug
 
-        self._fitness = 0                # Overall fitness
-        self._frames_since_progress = 0  # Número de frames desde que Player avanzó hacia la meta
-        self._frames = 0                 # Número de frames que Player ha estado vivo
-        
-        # seteo la config de la arquitectura de la capa oculta y la manera en la que se activan las neuronas
-        self.hidden_layer_architecture = self.config.NeuralNetwork.hidden_layer_architecture
-        self.hidden_activation = self.config.NeuralNetwork.hidden_node_activation
-        self.output_activation = self.config.NeuralNetwork.output_node_activation
+        # ---- configurar la NN ----
+        self.start_row, self.viz_width, self.viz_height = self.config.NeuralNetwork["input_dims"]
 
-        self.start_row, self.viz_width, self.viz_height = self.config.NeuralNetwork.input_dims
+        if self.config.NeuralNetwork["encode_row"]:
+            # codifica un vector binario con un solo 1 en la posicion donde se encuentra mario
+            num_inputs = self.viz_width * self.viz_height + self.viz_height
+        else:
+            num_inputs = self.viz_width * self.viz_height
+        
+        self.inputs_as_array = np.zeros((num_inputs, 1))
+        self.nn_arch = [num_inputs]                                                  # nodos de entrada
+        self.nn_arch.extend(self.config.NeuralNetwork["hidden_layer_architecture"])  # nodos de la capa oculata
+        self.nn_arch.append(6)                              # las 6 salidas : abajo, arriba, izq, derecha, a, b
+
+        self.nn = FeedForwardNetwork(self.nn_arch,
+                                     get_activation_by_name(self.config.NeuralNetwork["hidden_node_activation"]),
+                                     get_activation_by_name(self.config.NeuralNetwork["output_node_activation"])
+                                    )
+
+        # si estan seteados los cromosomas, los toma
+        if chromosome:
+            self.nn.params = chromosome
+        
+        # ---- variables de estado del jugador ----
+        self.fitness = 0                # Overall fitness
+        self.frames_since_progress = 0  # Número de frames desde que Player avanzó hacia la meta
+        self.frames = 0                 # Número de frames que Player ha estado vivo
+        self.is_alive = True
+        self.x_dist = None
+        self.game_score = None
+        self.did_win = False
+
+        # Esto es principalmente para "ver" a Player ganar. 
+        self.enable_additional_time  = self.config.Misc["allow_additional_time_for_flagpole"]
+        self.additional_timesteps = 0
+        self.max_additional_timesteps = int(60*2.5)
+
+        # ---- Acciones del jugador ----
+        # set de teclas                    B, NULL, SELECT, START, U, D, L, R, A
+        # index                            0  1     2       3      4  5  6  7  8
+        self.buttons_to_press = np.array( [0, 0,    0,      0,     0, 0, 0, 0, 0], np.int8)
 
         # Solo permito U, D, L, R, A, B y esos son los índices en los que se generará la salida.
         # Necesitamos un mapeo desde la salida a las claves anteriores
@@ -35,47 +67,7 @@ class Player:
             4: 8,  # A
             5: 0   # B
         }
-        
-        if self.config.NeuralNetwork.encode_row:
-            num_inputs = self.viz_width * self.viz_height + self.viz_height
-        else:
-            num_inputs = self.viz_width * self.viz_height
-        # print(f'num inputs:{num_inputs}')
-        
-        self.inputs_as_array = np.zeros((num_inputs, 1))
-        self.network_architecture = [num_inputs]                          # nodos de entrada
-        self.network_architecture.extend(self.hidden_layer_architecture)  # nodos de la capa oculata
-        self.network_architecture.append(6)                        # las 6 salidas : abajo, arriba, izq, derecha, a, b
-
-        self.network = FeedForwardNetwork(self.network_architecture,
-                                          get_activation_by_name(self.hidden_activation),
-                                          get_activation_by_name(self.output_activation)
-                                         )
-
-        # si estan seteados los cromosomas, los toma
-        if chromosome:
-            self.network.params = chromosome
-        
-        self.is_alive = True
-        self.x_dist = None
-        self.game_score = None
-        self.did_win = False
-
-        # Esto es principalmente para "ver" a Player ganar. 
-        self.allow_additional_time  = self.config.Misc.allow_additional_time_for_flagpole
-        self.additional_timesteps = 0
-        self.max_additional_timesteps = int(60*2.5)
-        self._printed = False
-
-        # set de teclas                    B, NULL, SELECT, START, U, D, L, R, A
-        # index                            0  1     2       3      4  5  6  7  8
-        self.buttons_to_press = np.array( [0, 0,    0,      0,     0, 0, 0, 0, 0], np.int8)
         self.farthest_x = 0
-
-    #getter del fitness
-    @property
-    def fitness(self):
-        return self._fitness
     
     #calculo el fitness del frame
     def calculate_fitness(self):
@@ -86,11 +78,11 @@ class Player:
         - game_score: Actual score Player has received in the level through power-ups, coins, etc.
         - did_win:    True/False if Player beat the level
         '''
-        frames = self._frames
+        frames = self.frames
         distance = self.x_dist
         score = self.game_score
         did_win = self.did_win
-        self._fitness = max((distance**1.8) - (frames**1.5) + (min(max(distance-50, 0), 1) * 2500) + (did_win * 1e6), 0.00001)
+        self.fitness = max((distance**1.8) - (frames**1.5) + (min(max(distance-50, 0), 1) * 2500) + (did_win * 1e6), 0.00001)
 
     #esto arma la grilla para detectar que elementos se encuentran en ella
     def set_input_as_array(self, ram, tiles) -> None:
@@ -115,7 +107,7 @@ class Player:
                     arr.append(0) # Empty
 
         self.inputs_as_array[:self.viz_height*self.viz_width, :] = np.array(arr).reshape((-1,1))
-        if self.config.NeuralNetwork.encode_row:
+        if self.config.NeuralNetwork["encode_row"]:
             # Asignar one-hot para mario row (marcamos la posicion en y de mario con un bit)
             row = mario_row - self.start_row
             one_hot = np.zeros((self.viz_height, 1))
@@ -132,36 +124,35 @@ class Player:
         #si mario esta vivo, aumenta el frame, se setea la distancia que se recorrio en el eje x, y se guarda el score 
         #TODO quitar lo del score
         if self.is_alive:
-            self._frames += 1
+            self.frames += 1
             self.x_dist = SMB.get_mario_location_in_level(ram).x
             self.game_score = SMB.get_mario_score(ram)
             
             # si llegamos a la meta, printeamos un mensaje por consola, es necesario correr el demo con --debug
             if ram[0x001D] == 3:
                 self.did_win = True
-                if not self._printed and self.debug:
-                    print(f'GANAMOS!!!')
-                if not self.allow_additional_time:
+                print(f'GANAMOS!!!')
+                if not self.enable_additional_time:
                     self.is_alive = False
                     return False
             
             # actualizo la mejor distancia si es que se llego mas lejos y reseteo la actual            
             if self.x_dist > self.farthest_x:
                 self.farthest_x = self.x_dist
-                self._frames_since_progress = 0
+                self.frames_since_progress = 0
             else:
-                self._frames_since_progress += 1
+                self.frames_since_progress += 1
 
             #por si me paso del tiempo limite 
-            if self.allow_additional_time and self.did_win:
+            if self.enable_additional_time and self.did_win:
                 self.additional_timesteps += 1
             
             #si me paso del maximo de timesteps, mato a mario 
-            if self.allow_additional_time and self.additional_timesteps > self.max_additional_timesteps:
+            if self.enable_additional_time and self.additional_timesteps > self.max_additional_timesteps:
                 self.is_alive = False
                 return False
             
-            elif not self.did_win and self._frames_since_progress > 60*3:
+            elif not self.did_win and self.frames_since_progress > 60*3:
                 self.is_alive = False
                 return False            
         else:
@@ -175,10 +166,10 @@ class Player:
         self.set_input_as_array(ram, tiles)
 
         
-        # --------------------------------------------------------------------------------------------------
-        #                           calculo la salida
-        # --------------------------------------------------------------------------------------------------
-        output = self.network.feed_forward(self.inputs_as_array)
+        # ------------------------------------------------------------------------------------------
+        #                           calculo la siguiente accion
+        # ------------------------------------------------------------------------------------------
+        output = self.nn.feed_forward(self.inputs_as_array)
         threshold = np.where(output > 0.5)[0]
         self.buttons_to_press.fill(0)  # limpio botones
 

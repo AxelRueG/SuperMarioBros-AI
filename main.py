@@ -9,13 +9,17 @@ class Game:
         self.i = 0
         self.done = False
         self.config = Config('settings.json')
+
         self.genetico = Genetico(self.config)
+
+        # @TODO: hacer que esto sea opcional segun config
         # self.mario = load_mario(op.abspath("individuals/test/"), "best_ind_gen1")
 
     def run(self):
         env = retro.make(game='SuperMarioBros-Nes', state='Level1-1')
         obs = env.reset()
         while True:
+            # @TODO: hacer que la grafica sea opcional segun config
             env.render()
 
             ram = env.get_ram()                                # estado actual del juego

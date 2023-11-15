@@ -1,5 +1,5 @@
 numpy
 pyqt5
 pillow
-gym==0.25.2
-gym-retro
+gym==0.21.0
+gym-retro==0.8.0

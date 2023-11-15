@@ -52,7 +52,7 @@ class Visualizer(QtWidgets.QWidget):
         self.nn_viz = nn_viz
         self.ram = None             # datos del juego en la memoria ram
         self.x_offset = 150
-        self.tile_width, self.tile_height = self.config.Graphics.tile_size
+        self.tile_width, self.tile_height = self.config.Graphics["tile_size"]
         self.tiles = None
         self.enemies = None
         self._should_update = True
@@ -68,7 +68,7 @@ class Visualizer(QtWidgets.QWidget):
         painter.setPen(QPen(color, 3.0, Qt.SolidLine))
         painter.setBrush(QBrush(Qt.NoBrush))
 
-        start_row, viz_width, viz_height = self.config.NeuralNetwork.input_dims
+        start_row, viz_width, viz_height = self.config.NeuralNetwork["input_dims"]
         painter.drawRect(x*self.tile_width + 5 + self.x_offset, start_row*self.tile_height + 5, viz_width*self.tile_width, viz_height*self.tile_height)
 
     # ---- Dibuja la grila de datos ----------------------------------------------------------------
@@ -211,7 +211,7 @@ class InformationWidget(QtWidgets.QWidget):
         current_individual_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.current_individual = QLabel()
         self.current_individual.setFont(normal_font)
-        self.current_individual.setText('1/{}'.format(self.config.Selection.num_parents))
+        self.current_individual.setText('1/{}'.format(self.config.Selection["num_parents"]))
         self.current_individual.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         hbox_current_individual = QHBoxLayout()
         hbox_current_individual.setContentsMargins(5, 0, 0, 0)
@@ -280,9 +280,9 @@ class InformationWidget(QtWidgets.QWidget):
         info_vbox.addLayout(hbox_trainable_params)
 
         # Selection
-        selection_type = self.config.Selection.selection_type
-        num_parents = self.config.Selection.num_parents
-        num_offspring = self.config.Selection.num_offspring
+        selection_type = self.config.Selection["selection_type"]
+        num_parents = self.config.Selection["num_parents"]
+        num_offspring = self.config.Selection["num_offspring"]
         if selection_type == 'comma':
             selection_txt = '{}, {}'.format(num_parents, num_offspring)
         elif selection_type == 'plus':
@@ -293,37 +293,37 @@ class InformationWidget(QtWidgets.QWidget):
         ga_vbox.addLayout(selection_hbox)
 
         # Lifespan
-        esperanza_de_vida = self.config.Selection.esperanza_de_vida
+        esperanza_de_vida = self.config.Selection["esperanza_de_vida"]
         esperanza_de_vida_txt = 'Infinite' if esperanza_de_vida == np.inf else str(esperanza_de_vida)
         esperanza_de_vida_hbox = self._create_hbox('Esperanza de vida:', font_bold, esperanza_de_vida_txt, normal_font)
         ga_vbox.addLayout(esperanza_de_vida_hbox)
 
         # Mutation rate
-        mutation_rate = self.config.Mutation.mutation_rate
-        mutation_type = self.config.Mutation.mutation_rate_type.capitalize()
+        mutation_rate = self.config.Mutation["mutation_rate"]
+        mutation_type = self.config.Mutation["mutation_rate_type"].capitalize()
         mutation_txt = '{} {}% '.format(mutation_type, str(round(mutation_rate*100, 2)))
         mutation_hbox = self._create_hbox('Mutación:', font_bold, mutation_txt, normal_font)
         ga_vbox.addLayout(mutation_hbox)
 
         # Crossover
-        crossover_selection = self.config.Crossover.crossover_selection
+        crossover_selection = self.config.Crossover["crossover_selection"]
         if crossover_selection == 'roulette':
             crossover_txt = 'Roulette'
         elif crossover_selection == 'tournament':
-            crossover_txt = 'Tournament({})'.format(self.config.Crossover.tournament_size)
+            crossover_txt = 'Tournament({})'.format(self.config.Crossover["tournament_size"])
         else:
             raise Exception('Unknown crossover selection "{}"'.format(crossover_selection))
         crossover_hbox = self._create_hbox('Cruza:', font_bold, crossover_txt, normal_font)
         ga_vbox.addLayout(crossover_hbox)
 
         # SBX eta
-        sbx_eta_txt = str(self.config.Crossover.sbx_eta)
+        sbx_eta_txt = str(self.config.Crossover["sbx_eta"])
         sbx_hbox = self._create_hbox('SBX Eta:', font_bold, sbx_eta_txt, normal_font)
         ga_vbox.addLayout(sbx_hbox)
 
         # Layers
         num_inputs = get_num_inputs(self.config)
-        hidden = self.config.NeuralNetwork.hidden_layer_architecture
+        hidden = self.config.NeuralNetwork["hidden_layer_architecture"]
         num_outputs = 6
         L = [num_inputs] + hidden + [num_outputs]
         layers_txt = '[' + ', '.join(str(nodes) for nodes in L) + ']'
@@ -451,7 +451,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # ------------------------------------------------------------------------------------------
         # Si no es una repetición entonces tenemos que seguir creando individuos.
         else:
-            num_parents = max(self.config.Selection.num_parents - num_loaded, 0)
+            num_parents = max(self.config.Selection["num_parents"] - num_loaded, 0)
             for _ in range(num_parents):
                 individual = Player(self.config)
                 # Set debug stuff if needed
@@ -468,14 +468,14 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.max_distance = 0  # Track más recorrido en nivel
         self.max_fitness = 0.0
-        self.env = retro.make(game='SuperMarioBros-Nes', state=f'Level{self.config.Misc.level}')
+        self.env = retro.make(game='SuperMarioBros-Nes', state=f'Level{self.config.Misc["level"]}')
 
         # Determinar el tamaño de la próxima generación según el tipo de selección.
         self._next_gen_size = None
-        if self.config.Selection.selection_type == 'plus':
-            self._next_gen_size = self.config.Selection.num_parents + self.config.Selection.num_offspring
-        elif self.config.Selection.selection_type == 'comma':
-            self._next_gen_size = self.config.Selection.num_offspring
+        if self.config.Selection["selection_type"] == 'plus':
+            self._next_gen_size = self.config.Selection["num_parents"] + self.config.Selection["num_offspring"]
+        elif self.config.Selection["selection_type"] == 'comma':
+            self._next_gen_size = self.config.Selection["num_offspring"]
 
         # ------------------------------------------------------------------------------------------
         # Si no estamos mostrando, necesitamos restablecer el entorno para empezar.
@@ -574,23 +574,23 @@ class MainWindow(QtWidgets.QMainWindow):
             pop_size = len(self.population.individuals)
             print(f'Wins: {num_wins}/{pop_size} (~{(float(num_wins)/pop_size*100):.2f}%)')
 
-        if self.config.Statistics.save_best_individual_from_generation:
-            folder = self.config.Statistics.save_best_individual_from_generation
+        if self.config.Statistics["save_best_individual_from_generation"]:
+            folder = self.config.Statistics["save_best_individual_from_generation"]
             best_ind_name = 'best_ind_gen{}'.format(self.current_generation - 1)
             best_ind = self.population.fittest_individual
             save_mario(folder, best_ind_name, best_ind)
 
-        if self.config.Statistics.save_population_stats:
-            fname = self.config.Statistics.save_population_stats
+        if self.config.Statistics["save_population_stats"]:
+            fname = self.config.Statistics["save_population_stats"]
             save_stats(self.population, fname)
 
-        self.population.individuals = elitism_selection(self.population, self.config.Selection.num_parents)
+        self.population.individuals = elitism_selection(self.population, self.config.Selection["num_parents"])
 
         random.shuffle(self.population.individuals)
         next_pop = []
 
         # Padres + hijos
-        if self.config.Selection.selection_type == 'plus':
+        if self.config.Selection["selection_type"] == 'plus':
             # Disminución de la vida útil
             for individual in self.population.individuals:
                 individual.esperanza_de_vida -= 1
@@ -619,9 +619,9 @@ class MainWindow(QtWidgets.QMainWindow):
         #                             genero la nueva poblacion
         # ------------------------------------------------------------------------------------------
         while len(next_pop) < self._next_gen_size:
-            selection = self.config.Crossover.crossover_selection
+            selection = self.config.Crossover["crossover_selection"]
             if selection == 'tournament':
-                p1, p2 = tournament_selection(self.population, 2, self.config.Crossover.tournament_size)
+                p1, p2 = tournament_selection(self.population, 2, self.config.Crossover["tournament_size"])
             elif selection == 'roulette':
                 p1, p2 = roulette_wheel_selection(self.population, 2)
             else:
@@ -672,16 +672,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.population.individuals = next_pop
 
     def _crossover(self, parent1_weights: np.ndarray, parent2_weights: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        eta = self.config.Crossover.sbx_eta
+        eta = self.config.Crossover["sbx_eta"]
         # SBX: pesos
         child1_weights, child2_weights = SBX(parent1_weights, parent2_weights, eta)
         return child1_weights, child2_weights
 
     def _mutation(self, child1_weights: np.ndarray, child2_weights: np.ndarray) -> None:
-        mutation_rate = self.config.Mutation.mutation_rate
-        scale = self.config.Mutation.gaussian_mutation_scale
+        mutation_rate = self.config.Mutation["mutation_rate"]
+        scale = self.config.Mutation["gaussian_mutation_scale"]
 
-        if self.config.Mutation.mutation_rate_type == 'dynamic':
+        if self.config.Mutation["mutation_rate_type"] == 'dynamic':
             mutation_rate = mutation_rate / math.sqrt(self.current_generation + 1)
         
         # Mutate weights
@@ -767,11 +767,11 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 # ¿Es la próxima generación?
                 if (self.current_generation > self._true_zero_gen and self._current_individual == self._next_gen_size) or\
-                    (self.current_generation == self._true_zero_gen and self._current_individual == self.config.Selection.num_parents):
+                    (self.current_generation == self._true_zero_gen and self._current_individual == self.config.Selection["num_parents"]):
                     self.next_generation()
                 else:
                     if self.current_generation == self._true_zero_gen:
-                        current_pop = self.config.Selection.num_parents
+                        current_pop = self.config.Selection["num_parents"]
                     else:
                         current_pop = self._next_gen_size
                     if not args.no_display:

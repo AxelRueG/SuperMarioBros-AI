@@ -15,11 +15,11 @@ class NeuralNetworkViz(QtWidgets.QWidget):
         self.config = config
         self.horizontal_distance_between_layers = 50
         self.vertical_distance_between_nodes = 10
-        l = self.config.NeuralNetwork.hidden_layer_architecture + [6]
+        l = self.config.NeuralNetwork["hidden_layer_architecture"] + [6]
         self.num_neurons_in_largest_layer = max(l[1:])
         self.neuron_locations = {}
-        self.tile_size = self.config.Graphics.tile_size
-        self.neuron_radius = self.config.Graphics.neuron_radius
+        self.tile_size = self.config.Graphics["tile_size"]
+        self.neuron_radius = self.config.Graphics["neuron_radius"]
 
         # Set all neuron locations for layer 0 (Input) to be at the same point.
         # The reason I do this is because the number of inputs can easily become too many to show on the screen.
