@@ -7,13 +7,11 @@ from config import Config
 class Player:
     def __init__(self,
                  config: Config,
-                 chromosome: Optional[Dict[str, np.ndarray]] = None,
-                 debug: Optional[bool] = False
+                 chromosome: Optional[Dict[str, np.ndarray]] = None
                  ):
 
         # ---- variables de configuracion ----
         self.config = config
-        self.debug = debug
 
         # ---- configurar la NN ----
         self.start_row, self.viz_width, self.viz_height = self.config.NeuralNetwork["input_dims"]
@@ -48,7 +46,7 @@ class Player:
         self.did_win = False
 
         # Esto es principalmente para "ver" a Player ganar. 
-        self.enable_additional_time  = self.config.Misc["allow_additional_time_for_flagpole"]
+        self.enable_additional_time  = self.config.General["allow_additional_time_for_flagpole"]
         self.additional_timesteps = 0
         self.max_additional_timesteps = int(60*2.5)
 
@@ -131,7 +129,7 @@ class Player:
             # si llegamos a la meta, printeamos un mensaje por consola, es necesario correr el demo con --debug
             if ram[0x001D] == 3:
                 self.did_win = True
-                print(f'GANAMOS!!!')
+                if self.config.General['debug']: print(f'GANAMOS!!!')
                 if not self.enable_additional_time:
                     self.is_alive = False
                     return False

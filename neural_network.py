@@ -59,9 +59,3 @@ class FeedForwardNetwork(object):
         self.out = self.output_activation(np.dot(W, y_prev))
 
         return self.out
-
-# NN = FeedForwardNetwork([2,2,1],
-#                         get_activation_by_name('sigmoide'),
-#                         get_activation_by_name('sigmoide'))
-
-# print(NN.feed_forward(np.array([1,1])))

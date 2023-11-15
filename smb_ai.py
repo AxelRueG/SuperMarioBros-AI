@@ -468,7 +468,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.max_distance = 0  # Track más recorrido en nivel
         self.max_fitness = 0.0
-        self.env = retro.make(game='SuperMarioBros-Nes', state=f'Level{self.config.Misc["level"]}')
+        self.env = retro.make(game='SuperMarioBros-Nes', state=f'Level{self.config.General["level"]}')
 
         # Determinar el tamaño de la próxima generación según el tipo de selección.
         self._next_gen_size = None

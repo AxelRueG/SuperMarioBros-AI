@@ -33,7 +33,7 @@ class Genetico:
 
 
     def next_generation(self) -> None:
-    
+        
         print(f'---- Fin Generacion: {self.generacion} ----------------------------------------------')
         mejor_individuo = self.poblacion.fittest_individual
         self.best_fitness = mejor_individuo.fitness
@@ -41,6 +41,7 @@ class Genetico:
         num_wins = sum(individual.did_win for individual in self.poblacion.individuals)
         tam_pob = self.poblacion.num_individuals
         print(f'Ganadores: ~{(float(num_wins)/tam_pob*100):.2f}%')
+        print(85*"-")
 
         # ---- Guardar el mejor individuo de la generacion -----------------------------------------
         if self.config.Statistics["save_best_individual_from_generation"]:
@@ -115,7 +116,9 @@ class Genetico:
         gaussian_mutation(child2_weights, mutation_rate, scale=scale)
 
     def next_individuo(self):
-        print(f'individuo actual {self.current}')
+        if self.config.General['debug']: 
+            print(f'individuo actual {self.current} fitness {self.player.fitness} distance {self.player.farthest_x}')
+
         self.current += 1
         # si todavia no termine de recorrer todos los individuos
         if (self.current < self.poblacion.num_individuals):
