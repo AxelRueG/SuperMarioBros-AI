@@ -15,8 +15,8 @@
     },
     "NeuralNetwork": {
         "input_dims": [ 4, 7, 10 ],
-        "hidden_layer_architecture": [ 9 ],
-        "hidden_node_activation": "relu",
+        "hidden_layer_architecture": [ 10 ],
+        "hidden_node_activation": "sigmoid",
         "output_node_activation": "sigmoid",
         "encode_row": true
     },
