@@ -1,16 +1,16 @@
 {
     "General": {
-        "debug": false,
+        "debug": true,
         "level": "1-1",
         "allow_additional_time_for_flagpole": true
     },
     "Graphics": {
         "tile_size": [ 16, 16 ],
         "neuron_radius": 8,
-        "enable": true
+        "enable": false
     },
     "Statistics": {
-        "save_best_individual_from_generation": "./individuals/test",
+        "save_best_individual_from_generation": "./individuals/test1",
         "save_population_stats": "./individuals/stat/stats.csv"
     },
     "NeuralNetwork": {

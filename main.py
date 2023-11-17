@@ -5,6 +5,7 @@ from genetic_algorithm.genetico import Genetico
 from typing import Optional
 from genetic_algorithm.utils import load_mario 
 
+from joblib import Parallel, delayed
 import time
 
 class Game:
@@ -46,7 +47,6 @@ class Game:
             ram = env.get_ram()                                # estado actual del juego
             tiles = SMB.get_tiles(ram)                         # procesa la grilla
 
-
             mario.update(ram, tiles)
             mario.calculate_fitness()
 
@@ -56,19 +56,42 @@ class Game:
                     env.close()
                 except ():
                     pass
-                return
+
+                if self.config.General['debug']: 
+                    print(f'individuo actual {i} fitness {mario.fitness} distance {mario.farthest_x}')
+
+                return mario
         env.close()
 
 
     def trn(self):
 
-        # while True:
-        for i in range(self.genetico.poblacion.num_individuals):
-            self.run(i)
-            print(f'fitness: {self.genetico.poblacion.individuals[i].fitness}')
+        # esto es un aproximado del fitness de un individuo ganador
+        # o podriamos hacerlo por epocas
+        while self.genetico.best_fitness < 3037415:
+            
+            ## ---- Evaluar jugadores en paralelo [Multinucleo] ----
+            # tic = time.time()
+            res = Parallel(n_jobs=-1) \
+                (delayed(self.run)(individuo) for individuo in range(self.genetico.poblacion.num_individuals))
+            # toc = time.time()
+            # print(f"timepo de entreno {toc-tic}")
+
+            ## ---- Evaluar en [Mononucleo] ----
+            # for individuo in range(self.genetico.poblacion.num_individuals):
+            #     self.run(individuo)
+
+            # ---- Actualizar Poblaccion -----------------------------------------------------------
+            self.genetico.poblacion.individuals = res
+            self.genetico.next_generation()
+            
 
 if __name__ == "__main__":
 
-    # game = Game('./individuals/test/best_ind_gen80')
+    ## SI QUEREMOS REPETIR UN INDIVIDUO
+    # game = Game('./individuals/test1/best_ind_gen5')
+    # game.run()
+
+    ## SI QUEREMOS ENTRENAR (por temas de paralelismo en config.Graphics.enable == false)
     game = Game()
     game.trn()
