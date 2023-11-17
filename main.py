@@ -5,6 +5,8 @@ from genetic_algorithm.genetico import Genetico
 from typing import Optional
 from genetic_algorithm.utils import load_mario 
 
+import time
+
 class Game:
 
     def __init__(self, individuo_file: Optional[str] = None):
@@ -14,6 +16,10 @@ class Game:
 
         self.replay = True if individuo_file else False
 
+        self.mario = None
+        self.genetico = None
+
+        # Cargo los jugadores
         if (self.replay):
             elems = individuo_file.split('/')
             folder = '/'.join(elems[:len(elems)-1])
@@ -23,36 +29,46 @@ class Game:
         else:
             self.genetico = Genetico(self.config)
 
-    def run(self):
-        env = retro.make(game='SuperMarioBros-Nes', state='Level1-1')
+    def run(self, i: int = 0):
+        env = retro.make(game='SuperMarioBros-Nes', state=f'Level{self.config.General["level"]}')
         obs = env.reset()
+
+        # Compruevo si es una repeticion
+        if self.replay:
+            mario = self.mario
+        else:
+            mario = self.genetico.poblacion.individuals[i]
+
         while True:
+            # Inicio el juego
             if self.config.Graphics['enable']: env.render()
 
             ram = env.get_ram()                                # estado actual del juego
             tiles = SMB.get_tiles(ram)                         # procesa la grilla
 
-            if not self.replay:
-                self.genetico.player.update(ram, tiles)
-                self.genetico.player.calculate_fitness()
 
-                obs, rew, done, info = env.step(self.genetico.player.buttons_to_press)
-                if not self.genetico.player.is_alive:
-                    self.genetico.next_individuo()
-                    env.reset()
-        
-            else:
+            mario.update(ram, tiles)
+            mario.calculate_fitness()
 
-                self.mario.update(ram, tiles)
-                self.mario.calculate_fitness()
-
-                obs, rew, done, info = env.step(self.mario.buttons_to_press)
-                if not self.mario.is_alive:
+            obs, rew, done, info = env.step(mario.buttons_to_press)
+            if not mario.is_alive:
+                try:
                     env.close()
+                except ():
+                    pass
+                return
         env.close()
+
+
+    def trn(self):
+
+        # while True:
+        for i in range(self.genetico.poblacion.num_individuals):
+            self.run(i)
+            print(f'fitness: {self.genetico.poblacion.individuals[i].fitness}')
 
 if __name__ == "__main__":
 
-    # game = Game('./individuals/test/best_ind_gen1')
+    # game = Game('./individuals/test/best_ind_gen80')
     game = Game()
-    game.run()
+    game.trn()

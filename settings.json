@@ -1,6 +1,6 @@
 {
     "General": {
-        "debug": true,
+        "debug": false,
         "level": "1-1",
         "allow_additional_time_for_flagpole": true
     },

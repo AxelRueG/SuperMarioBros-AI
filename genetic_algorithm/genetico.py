@@ -91,8 +91,6 @@ class Genetico:
 
         # Aumentamos la generacion y setteamos el primer jugador
         self.generacion += 1
-        self.current = 0
-        self.player = self.poblacion.individuals[self.current]
 
 
     def crossover(self, parent1_weights: np.ndarray, parent2_weights: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
@@ -113,13 +111,13 @@ class Genetico:
         gaussian_mutation(child1_weights, mutation_rate, scale=scale)
         gaussian_mutation(child2_weights, mutation_rate, scale=scale)
 
-    def next_individuo(self):
-        if self.config.General['debug']: 
-            print(f'individuo actual {self.current} fitness {self.player.fitness} distance {self.player.farthest_x}')
+    # def next_individuo(self):
+    #     if self.config.General['debug']: 
+    #         print(f'individuo actual {self.current} fitness {self.player.fitness} distance {self.player.farthest_x}')
 
-        self.current += 1
-        # si todavia no termine de recorrer todos los individuos
-        if (self.current < self.poblacion.num_individuals):
-            self.player = self.poblacion.individuals[self.current]
-        else:
-            self.next_generation()
+    #     self.current += 1
+    #     # si todavia no termine de recorrer todos los individuos
+    #     if (self.current < self.poblacion.num_individuals):
+    #         self.player = self.poblacion.individuals[self.current]
+    #     else:
+    #         self.next_generation()
