@@ -1,12 +1,16 @@
 import numpy as np
 from typing import Tuple, Optional, Union, Dict, List
-import os, csv, json
+import os
+import csv
+import json
 
 from genetic_algorithm.individual import Player
 from genetic_algorithm.population import Population
 from config import Config
-    
+
 # ---- esta funcion guarda en un bin los pesos y el bias del modelo --------------------------------
+
+
 def save_mario(population_folder: str, individual_name: str, mario: Player) -> None:
     # Make population folder if it doesnt exist
     if not os.path.exists(population_folder):
@@ -16,7 +20,7 @@ def save_mario(population_folder: str, individual_name: str, mario: Player) -> N
     if 'settings.json' not in os.listdir(population_folder):
         with open(os.path.join(population_folder, 'settings.json'), 'w') as config_file:
             json.dump(mario.config.__dict__, config_file, indent=2)
-    
+
     # ---- crea el directorio para el individual ----
     individual_dir = os.path.join(population_folder, individual_name)
     os.makedirs(individual_dir)
@@ -27,12 +31,15 @@ def save_mario(population_folder: str, individual_name: str, mario: Player) -> N
         w_name = 'W' + str(l)
         weights = mario.nn.params[w_name]
         np.save(os.path.join(individual_dir, w_name), weights)
-    
+
 # ---- carga el archivo del individual -------------------------------------------------------------
+
+
 def load_mario(population_folder: str, individual_name: str, config: Optional[Config] = None) -> Player:
     # se asegura que exista dentro de la carpeta population
     if not os.path.exists(os.path.join(population_folder, individual_name)):
-        raise Exception(f'{individual_name} not found inside {population_folder}')
+        raise Exception(
+            f'{individual_name} not found inside {population_folder}')
 
     # cargo la config
     if not config:
@@ -41,7 +48,8 @@ def load_mario(population_folder: str, individual_name: str, config: Optional[Co
         try:
             config = Config(settings_path)
         except:
-            raise Exception(f'settings.config not found under {population_folder}')
+            raise Exception(
+                f'settings.config not found under {population_folder}')
 
     chromosome: Dict[str, np.ndarray] = {}
 
@@ -50,12 +58,15 @@ def load_mario(population_folder: str, individual_name: str, config: Optional[Co
         extension = fname.rsplit('.npy', 1)
         if len(extension) == 2:
             param = extension[0]
-            chromosome[param] = np.load(os.path.join(population_folder, individual_name, fname))
-        
+            chromosome[param] = np.load(os.path.join(
+                population_folder, individual_name, fname))
+
     mario = Player(config, chromosome=chromosome)
     return mario
 
-# ---- estadisticas -------------------------------------------------------------------------------- 
+# ---- estadisticas --------------------------------------------------------------------------------
+
+
 def _calc_stats(data: List[Union[int, float]]) -> Tuple[float, float, float, float, float]:
     mean = np.mean(data)
     median = np.median(data)
@@ -66,29 +77,31 @@ def _calc_stats(data: List[Union[int, float]]) -> Tuple[float, float, float, flo
     return (mean, median, std, _min, _max)
 
 # ---- guardo las estadisticas de la poblacion -----------------------------------------------------
+
+
 def save_stats(population: Population, fname: str):
     directory = os.path.dirname(fname)
-    #por si no existe el directorio lo creo
+    # por si no existe el directorio lo creo
     if not os.path.exists(directory):
         os.makedirs(directory)
 
     f = fname
-    #cargo la informacion de los individuos de la poblacion
-    frames = [individual._frames for individual in population.individuals]
-    max_distance = [individual.farthest_x for individual in population.individuals]
-    fitness = [individual.fitness for individual in population.individuals]
-    wins = [sum([individual.did_win for individual in population.individuals])]
+    # cargo la informacion de los individuos de la poblacion
 
     write_header = True
-    #si ya tengo hecho el header, no lo sobreescribo mas adelante
+    # si ya tengo hecho el header, no lo sobreescribo mas adelante
     if os.path.exists(f):
         write_header = False
 
-    trackers = [('frames', frames),
-                ('distance', max_distance),
-                ('fitness', fitness),
-                ('wins', wins)
-                ]
+    trackers = [
+        ('frames', [individual.frames for individual in population.individuals]),
+        ('distance', [
+            individual.farthest_x for individual in population.individuals]),
+        ('fitness', [
+            individual.fitness for individual in population.individuals]),
+        ('wins', [
+            sum([individual.did_win for individual in population.individuals])])
+    ]
 
     stats = ['mean', 'median', 'std', 'min', 'max']
 

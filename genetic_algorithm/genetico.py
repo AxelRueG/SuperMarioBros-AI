@@ -3,7 +3,7 @@ import random, os.path as op, math
 from typing import List, Optional, Tuple
 from config import Config
 
-from genetic_algorithm.utils import save_mario, load_mario
+from genetic_algorithm.utils import save_mario, save_stats
 from genetic_algorithm.gen_operator import tournament_selection, gaussian_mutation, simulated_binary_crossover as SBX
 from genetic_algorithm.individual import Player
 from genetic_algorithm.population import Population
@@ -47,6 +47,11 @@ class Genetico:
             best_ind_name = 'best_ind_gen{}'.format(self.generacion)
             best_ind = self.poblacion.fittest_individual
             save_mario(folder, best_ind_name, best_ind)
+
+        
+        if self.config.Statistics['save_population_stats']:
+            fname = self.config.Statistics['save_population_stats']
+            save_stats(self.poblacion, fname)
 
         # Elitismo
         next_pop = [mejor_individuo]
