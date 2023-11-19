@@ -16,8 +16,8 @@
     "NeuralNetwork": {
         "input_dims": [ 4, 7, 10 ],
         "hidden_layer_architecture": [ 10 ],
-        "hidden_node_activation": "sigmoid",
-        "output_node_activation": "sigmoid",
+        "hidden_node_activation": "relu",
+        "output_node_activation": "relu",
         "encode_row": true
     },
     "Selection": {
