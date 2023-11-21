@@ -5,3 +5,5 @@ ejem_old/*
 ./__pycache__/*
 */__pycache__/
 */__pycache__/*
+./individuals/
+./individuals/*

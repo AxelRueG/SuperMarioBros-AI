@@ -13,6 +13,8 @@ def get_activation_by_name(name: str) -> ActivationFunction:
         return ActivationFunction(lambda X: np.maximum(0, X))
     elif name == 'linear':
         return ActivationFunction(lambda X: X)
+    elif name == 'tanh':
+        return ActivationFunction(lambda X: np.tanh(X))
     else: # sigmoide
         return ActivationFunction(lambda X: 1.0 / (1.0 + np.exp(-X)))
 

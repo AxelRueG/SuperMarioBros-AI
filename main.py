@@ -68,15 +68,12 @@ class Game:
 
         # esto es un aproximado del fitness de un individuo ganador
         # o podriamos hacerlo por epocas
-        while self.genetico.best_fitness < 3037415:
+        while self.genetico.generacion < 500:
             
             ## ---- Evaluar jugadores en paralelo [Multinucleo] ----
-            # tic = time.time()
             res = Parallel(n_jobs=-1) \
                 (delayed(self.run)(individuo) for individuo in range(self.genetico.poblacion.num_individuals))
-            # toc = time.time()
-            # print(f"timepo de entreno {toc-tic}")
-
+            
             ## ---- Evaluar en [Mononucleo] ----
             # for individuo in range(self.genetico.poblacion.num_individuals):
             #     self.run(individuo)
@@ -89,9 +86,12 @@ class Game:
 if __name__ == "__main__":
 
     ## SI QUEREMOS REPETIR UN INDIVIDUO
-    # game = Game('./individuals/test1/best_ind_gen5')
+    # game = Game('./individuals/tanh_2/best_ind_gen295')
     # game.run()
 
     ## SI QUEREMOS ENTRENAR (por temas de paralelismo en config.Graphics.enable == false)
     game = Game()
+    tic = time.time()
     game.trn()
+    toc = time.time()
+    print(f"timepo de entreno {toc-tic}")

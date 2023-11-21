@@ -10,14 +10,14 @@
         "enable": false
     },
     "Statistics": {
-        "save_best_individual_from_generation": "./individuals/test1",
-        "save_population_stats": "./individuals/stat/stats.csv"
+        "save_best_individual_from_generation": "./individuals/sig_sig",
+        "save_population_stats": "./individuals/stat/sigmoide_results.csv"
     },
     "NeuralNetwork": {
         "input_dims": [ 4, 7, 10 ],
         "hidden_layer_architecture": [ 10 ],
-        "hidden_node_activation": "sigmoid",
-        "output_node_activation": "sigmoid",
+        "hidden_node_activation": "sigmoide",
+        "output_node_activation": "sigmoide",
         "encode_row": true
     },
     "Selection": {
@@ -31,6 +31,6 @@
     "Mutation": {
         "mutation_rate": 0.05,
         "mutation_rate_type": "static",
-        "gaussian_mutation_scale": 0.2
+        "gaussian_mutation_scale": 0.25
     }
 }
