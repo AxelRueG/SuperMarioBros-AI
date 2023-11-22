@@ -10,8 +10,8 @@
         "enable": false
     },
     "Statistics": {
-        "save_best_individual_from_generation": "./individuals/sig_sig",
-        "save_population_stats": "./individuals/stat/sigmoide_results.csv"
+        "save_best_individual_from_generation": "./individuals/sig_sig_2",
+        "save_population_stats": "./individuals/stat/sigmoide_results_2.csv"
     },
     "NeuralNetwork": {
         "input_dims": [ 4, 7, 10 ],
@@ -31,6 +31,6 @@
     "Mutation": {
         "mutation_rate": 0.05,
         "mutation_rate_type": "static",
-        "gaussian_mutation_scale": 0.25
+        "gaussian_mutation_scale": 0.2
     }
 }
