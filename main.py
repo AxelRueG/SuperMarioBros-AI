@@ -1,5 +1,5 @@
 import retro, os.path as op
-from utils import SMB
+from utils import SMB, ColorMap, EnemyType, StaticTileType, DynamicTileType
 from config import Config
 from genetic_algorithm.genetico import Genetico
 from typing import Optional
@@ -7,6 +7,8 @@ from genetic_algorithm.utils import load_mario
 
 from joblib import Parallel, delayed
 import time
+
+from graf_mesh import draw_tiles
 
 class Game:
 
@@ -42,10 +44,13 @@ class Game:
 
         while True:
             # Inicio el juego
-            if self.config.Graphics['enable']: env.render()
+            # if self.config.Graphics['enable']: env.render()
 
             ram = env.get_ram()                                # estado actual del juego
             tiles = SMB.get_tiles(ram)                         # procesa la grilla
+
+            if self.config.Graphics['enable']: 
+                draw_tiles(tiles)
 
             mario.update(ram, tiles)
             mario.calculate_fitness()
