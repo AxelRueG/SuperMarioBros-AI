@@ -11,7 +11,7 @@
       16
     ],
     "neuron_radius": 8,
-    "enable": false
+    "enable": true
   },
   "Statistics": {
     "save_best_individual_from_generation": "./individuals/sig_sig_2",

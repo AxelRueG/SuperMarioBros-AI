@@ -85,22 +85,39 @@ class DynamicTileType(Enum):
         return value in set(item.value for item in cls)
 
 class ColorMap(Enum):
-    Empty = (255, 255, 255)   # White
-    Ground = (128, 43, 0)     # Brown
-    Fake = (128, 43, 0)
-    Mario = (0, 0, 255)
-    Goomba = (255, 0, 20)
-    Top_Pipe1 = (0, 15, 21)  # Dark Green
-    Top_Pipe2 = (0, 15, 21)  # Dark Green
-    Bottom_Pipe1 = (5, 179, 34)  # Light Green
-    Bottom_Pipe2 = (5, 179, 34)  # Light Green
-    Coin_Block1 = (219, 202, 18)  # Gold
-    Coin_Block2 = (219, 202, 18)  # Gold
-    Breakable_Block = (79, 70, 25)  # Brownish
+    Empty = 0   # White
+    Ground = 5     # Brown
+    Fake = 5
+    Mario = 20
+    Goomba = 10
+    Top_Pipe1 = 7  # Dark Green
+    Top_Pipe2 = 7  # Dark Green
+    Bottom_Pipe1 = 12  # Light Green
+    Bottom_Pipe2 = 12  # Light Green
+    Coin_Block1 = 15  # Gold
+    Coin_Block2 = 15  # Gold
+    Breakable_Block = 3  # Brownish
 
-    Generic_Enemy = (255, 0, 20)  # Red
-    Generic_Static_Tile = (128, 43, 0) 
-    Generic_Dynamic_Tile = (79, 70, 25)
+    Generic_Enemy = 10  # Red
+    Generic_Static_Tile = 5 
+    Generic_Dynamic_Tile = 3
+
+    # Empty = (255, 255, 255)   # White
+    # Ground = (128, 43, 0)     # Brown
+    # Fake = (128, 43, 0)
+    # Mario = (0, 0, 255)
+    # Goomba = (255, 0, 20)
+    # Top_Pipe1 = (0, 15, 21)  # Dark Green
+    # Top_Pipe2 = (0, 15, 21)  # Dark Green
+    # Bottom_Pipe1 = (5, 179, 34)  # Light Green
+    # Bottom_Pipe2 = (5, 179, 34)  # Light Green
+    # Coin_Block1 = (219, 202, 18)  # Gold
+    # Coin_Block2 = (219, 202, 18)  # Gold
+    # Breakable_Block = (79, 70, 25)  # Brownish
+
+    # Generic_Enemy = (255, 0, 20)  # Red
+    # Generic_Static_Tile = (128, 43, 0) 
+    # Generic_Dynamic_Tile = (79, 70, 25)
 
 Shape = namedtuple('Shape', ['width', 'height'])
 Point = namedtuple('Point', ['x', 'y'])
