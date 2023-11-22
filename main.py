@@ -86,12 +86,12 @@ class Game:
 if __name__ == "__main__":
 
     ## SI QUEREMOS REPETIR UN INDIVIDUO
-    # game = Game('./individuals/tanh_2/best_ind_gen295')
-    # game.run()
+    game = Game('./individuals/sig_sig_2/best_ind_gen351')
+    game.run()
 
     ## SI QUEREMOS ENTRENAR (por temas de paralelismo en config.Graphics.enable == false)
-    game = Game()
-    tic = time.time()
-    game.trn()
-    toc = time.time()
-    print(f"timepo de entreno {toc-tic}")
+    # game = Game()
+    # tic = time.time()
+    # game.trn()
+    # toc = time.time()
+    # print(f"timepo de entreno {toc-tic}")
