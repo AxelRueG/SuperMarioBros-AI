@@ -8,8 +8,6 @@ from genetic_algorithm.utils import load_mario
 from joblib import Parallel, delayed
 import time
 
-from graf_mesh import draw_tiles
-
 class Game:
 
     def __init__(self, individuo_file: Optional[str] = None):
@@ -44,13 +42,13 @@ class Game:
 
         while True:
             # Inicio el juego
-            # if self.config.Graphics['enable']: env.render()
+            if self.config.Graphics['enable']: 
+                env.render()
+                time.sleep(0.005)
 
             ram = env.get_ram()                                # estado actual del juego
             tiles = SMB.get_tiles(ram)                         # procesa la grilla
 
-            if self.config.Graphics['enable']: 
-                draw_tiles(tiles)
 
             mario.update(ram, tiles)
             mario.calculate_fitness()
@@ -91,7 +89,7 @@ class Game:
 if __name__ == "__main__":
 
     ## SI QUEREMOS REPETIR UN INDIVIDUO
-    game = Game('./individuals/sig_sig_2/best_ind_gen351')
+    game = Game('./individuals/test1/best_ind_gen137')
     game.run()
 
     ## SI QUEREMOS ENTRENAR (por temas de paralelismo en config.Graphics.enable == false)
